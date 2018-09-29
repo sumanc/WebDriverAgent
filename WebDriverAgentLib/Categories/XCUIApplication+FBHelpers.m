@@ -63,7 +63,8 @@ const static NSTimeInterval FBMinimumAppSwitchWait = 3.0;
   info[@"frame"] = NSStringFromCGRect(snapshot.wdFrame);
   info[@"isEnabled"] = [@([snapshot isWDEnabled]) stringValue];
 //  info[@"isVisible"] = [@([snapshot isWDVisible]) stringValue];
-
+  info[@"hasFocus"] = [@([snapshot hasKeyboardFocus]) stringValue];
+  
   NSArray *childElements = snapshot.children;
   if ([childElements count]) {
     info[@"children"] = [[NSMutableArray alloc] init];

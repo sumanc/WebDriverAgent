@@ -55,6 +55,10 @@
 
 @end
 
+@interface FBFocusAttribute : FBElementAttribute
+
+@end
+
 @interface FBDimensionAttribute : FBElementAttribute
 
 @end
@@ -385,7 +389,8 @@ static NSString *const FBAbstractMethodInvocationException = @"AbstractMethodInv
            FBNameAttribute.class,
            FBLabelAttribute.class,
            FBEnabledAttribute.class,
-           FBVisibleAttribute.class,
+//           FBVisibleAttribute.class,
+           FBFocusAttribute.class,
            FBXAttribute.class,
            FBYAttribute.class,
            FBWidthAttribute.class,
@@ -480,6 +485,21 @@ static NSString *const FBAbstractMethodInvocationException = @"AbstractMethodInv
 + (NSString *)valueForElement:(id<FBElement>)element
 {
   return element.wdVisible ? @"true" : @"false";
+}
+
+@end
+
+@implementation FBFocusAttribute
+
++ (NSString *)name
+{
+  return @"hasFocus";
+}
+
++ (NSString *)valueForElement:(id<FBElement>)element
+{
+  XCElementSnapshot *elementSnapshot = (XCElementSnapshot *)element;
+  return elementSnapshot.hasKeyboardFocus ? @"true" : @"false";
 }
 
 @end
