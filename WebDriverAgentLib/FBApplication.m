@@ -29,11 +29,11 @@
 
 + (instancetype)fb_activeApplication
 {
-  [[[FBRunLoopSpinner new]
-    timeout:5]
-   spinUntilTrue:^BOOL{
-     return [[XCAXClient_iOS sharedClient] activeApplications].count == 1;
-   }];
+//  [[[FBRunLoopSpinner new]
+//    timeout:5]
+//   spinUntilTrue:^BOOL{
+//     return [[XCAXClient_iOS sharedClient] activeApplications].count == 1;
+//   }];
 
   XCAccessibilityElement *activeApplicationElement = [[[XCAXClient_iOS sharedClient] activeApplications] firstObject];
   if (!activeApplicationElement) {
