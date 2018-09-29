@@ -62,7 +62,7 @@ const static NSTimeInterval FBMinimumAppSwitchWait = 3.0;
   info[@"rect"] = [XCUIApplication formattedRectWithFrame:snapshot.wdFrame];
   info[@"frame"] = NSStringFromCGRect(snapshot.wdFrame);
   info[@"isEnabled"] = [@([snapshot isWDEnabled]) stringValue];
-  info[@"isVisible"] = [@([snapshot isWDVisible]) stringValue];
+//  info[@"isVisible"] = [@([snapshot isWDVisible]) stringValue];
 
   NSArray *childElements = snapshot.children;
   if ([childElements count]) {
