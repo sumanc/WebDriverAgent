@@ -38,6 +38,7 @@
     [[FBRoute POST:@"/wda/homescreen"].withoutSession respondWithTarget:self action:@selector(handleHomescreenCommand:)],
     [[FBRoute POST:@"/wda/deactivateApp"] respondWithTarget:self action:@selector(handleDeactivateAppCommand:)],
     [[FBRoute POST:@"/wda/keyboard/dismiss"] respondWithTarget:self action:@selector(handleDismissKeyboardCommand:)],
+    [[FBRoute GET:@"/wda/keyboard/present"] respondWithTarget:self action:@selector(handleKeyboardPresent:)],
     [[FBRoute GET:@"/wda/elementCache/size"] respondWithTarget:self action:@selector(handleGetElementCacheSizeCommand:)],
     [[FBRoute POST:@"/wda/elementCache/clear"] respondWithTarget:self action:@selector(handleClearElementCacheCommand:)],
   ];
@@ -93,6 +94,19 @@
     return FBResponseWithError(error);
   }
   return FBResponseWithOK();
+}
+
++ (id<FBResponsePayload>)handleKeyboardPresent:(FBRouteRequest *)request
+{
+  XCUIElementQuery *keyboards = [request.session.application keyboards];
+  if (keyboards == nil) {
+    return FBResponseWithObject(@NO);
+  }
+  NSArray *kb = [keyboards allElementsBoundByIndex];
+  if (kb == nil || kb.count == 0) {
+    return FBResponseWithObject(@NO);
+  }
+  return FBResponseWithObject(@YES);
 }
 
 + (id<FBResponsePayload>)handleGetElementCacheSizeCommand:(FBRouteRequest *)request
