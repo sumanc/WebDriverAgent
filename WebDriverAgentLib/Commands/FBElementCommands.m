@@ -385,7 +385,7 @@
     XCUIElement *alert = alerts[0];
     NSArray *texts = [[alert staticTexts] allElementsBoundByIndex];
     NSString *title = [texts[0] label];
-    NSString *subtitle = [texts[1] label];
+    NSString *subtitle = texts.count > 1 ? [texts[1] label] : @"";
     NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
     for (XCUIElement *button in buttons) {
       if (CGRectContainsPoint(button.frame, tapPoint)) {
