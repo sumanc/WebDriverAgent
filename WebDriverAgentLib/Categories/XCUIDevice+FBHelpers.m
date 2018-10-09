@@ -75,6 +75,34 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
   return (NSData *)UIImagePNGRepresentation(image);
 }
 
+- (NSData *)fb_screenshotHighWithError:(NSError*__autoreleasing*)error
+{
+  Class xcScreenClass = objc_lookUpClass("XCUIScreen");
+  if (nil == xcScreenClass) {
+    NSData *result = [[XCAXClient_iOS sharedClient] screenshotData];
+    if (nil == result) {
+      if (error) {
+        *error = [[FBErrorBuilder.builder withDescription:@"Cannot take a screenshot of the current screen state"] build];
+      }
+      return nil;
+    }
+    return result;
+  }
+  
+//  XCUIApplication *app = FBApplication.fb_activeApplication;
+//  CGSize screenSize = FBAdjustDimensionsForApplication(app.frame.size, app.interfaceOrientation);
+//  NSUInteger quality = 0;
+//  CGRect screenRect = CGRectMake(0, 0, screenSize.width, screenSize.height);
+//
+  XCUIScreen *mainScreen = (XCUIScreen *)[xcScreenClass mainScreen];
+//  return [mainScreen screenshotDataForQuality:quality rect:screenRect error:error];
+  
+  XCUIScreenshot *screenshot = [mainScreen screenshot];
+  NSData *result = [screenshot PNGRepresentation];
+  return result;
+}
+
+
 - (BOOL)fb_fingerTouchShouldMatch:(BOOL)shouldMatch
 {
   const char *name;
