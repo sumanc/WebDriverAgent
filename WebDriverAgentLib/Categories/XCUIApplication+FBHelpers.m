@@ -64,7 +64,9 @@ const static NSTimeInterval FBMinimumAppSwitchWait = 3.0;
   info[@"isEnabled"] = [@([snapshot isWDEnabled]) stringValue];
 //  info[@"isVisible"] = [@([snapshot isWDVisible]) stringValue];
   info[@"hasFocus"] = [@([snapshot hasKeyboardFocus]) stringValue];
-  
+  NSDictionary *additionalAttrinutes = snapshot.additionalAttributes;
+  NSString *class = [additionalAttrinutes objectForKey:@5004];
+  info[@"class"] = class == nil ? @"" : class;
   NSArray *childElements = snapshot.children;
   if ([childElements count]) {
     info[@"children"] = [[NSMutableArray alloc] init];
