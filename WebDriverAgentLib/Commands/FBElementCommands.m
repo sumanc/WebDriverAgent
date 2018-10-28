@@ -57,6 +57,7 @@
     [[FBRoute GET:@"/element/:uuid/attribute/:name"] respondWithTarget:self action:@selector(handleGetAttribute:)],
     [[FBRoute GET:@"/element/:uuid/text"] respondWithTarget:self action:@selector(handleGetText:)],
     [[FBRoute GET:@"/element/:uuid/displayed"] respondWithTarget:self action:@selector(handleGetDisplayed:)],
+    [[FBRoute GET:@"/type/:elementType/name/:elementName/wda/displayed"] respondWithTarget:self action:@selector(handleIsDisplayed:)],
     [[FBRoute GET:@"/element/:uuid/name"] respondWithTarget:self action:@selector(handleGetName:)],
     [[FBRoute POST:@"/element/:uuid/value"] respondWithTarget:self action:@selector(handleSetValue:)],
     [[FBRoute POST:@"/element/:uuid/click"] respondWithTarget:self action:@selector(handleClick:)],
@@ -124,6 +125,26 @@
   XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
   BOOL isVisible = element.isWDVisible;
   return FBResponseWithStatus(FBCommandStatusNoError, isVisible ? @YES : @NO);
+}
+
++ (id<FBResponsePayload>)handleIsDisplayed:(FBRouteRequest *)request
+{
+  NSString *type = request.parameters[@"elementType"];
+  NSString *name = request.parameters[@"elementName"];
+
+  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+  [application buttons];
+  SEL sel = NSSelectorFromString([NSString stringWithFormat:@"%@s", type]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+  XCUIElementQuery *elements = (XCUIElementQuery *)[application performSelector:sel];
+#pragma clang diagnostic pop
+  XCUIElement *element = elements[name];
+  BOOL isDisplayed = NO;
+  if ([element exists]) {
+    isDisplayed = [element isHittable];
+  }
+  return FBResponseWithStatus(FBCommandStatusNoError, isDisplayed ? @YES : @NO);
 }
 
 + (id<FBResponsePayload>)handleGetAccessible:(FBRouteRequest *)request
