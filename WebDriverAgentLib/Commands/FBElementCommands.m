@@ -133,7 +133,7 @@
   NSString *name = request.parameters[@"elementName"];
 
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
-  [application buttons];
+
   SEL sel = NSSelectorFromString([NSString stringWithFormat:@"%@s", type]);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -144,6 +144,7 @@
   if ([element exists]) {
     isDisplayed = [element isHittable];
   }
+  
   return FBResponseWithStatus(FBCommandStatusNoError, isDisplayed ? @YES : @NO);
 }
 
