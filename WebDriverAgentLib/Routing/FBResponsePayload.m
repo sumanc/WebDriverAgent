@@ -17,6 +17,8 @@
 #import "XCUIElement+FBUtilities.h"
 #import "XCUIElement+FBWebDriverAttributes.h"
 
+#import "BSSystemInfo.h"
+
 inline static NSDictionary *FBDictionaryResponseWithElement(XCUIElement *element, NSString *elementUUID, BOOL compact);
 
 id<FBResponsePayload> FBResponseWithOK()
@@ -76,6 +78,7 @@ id<FBResponsePayload> FBResponseWithStatus(FBCommandStatus status, id object)
     @"value" : object ?: @{},
     @"sessionId" : [FBSession activeSession].identifier ?: NSNull.null,
     @"status" : @(status),
+    @"systemInfo" : systemInfo(),
   }];
 }
 
