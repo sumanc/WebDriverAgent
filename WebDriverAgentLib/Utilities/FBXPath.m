@@ -107,11 +107,11 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   @throw [NSException exceptionWithName:name reason:reason userInfo:@{}];
 }
 
-+ (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root
++ (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query
 {
   xmlDocPtr doc;
   xmlTextWriterPtr writer = xmlNewTextWriterDoc(&doc, 0);
-  int rc = [FBXPath getSnapshotAsXML:(XCElementSnapshot *)root writer:writer elementStore:nil query:nil];
+  int rc = [FBXPath getSnapshotAsXML:(XCElementSnapshot *)root writer:writer elementStore:nil query:query];
   if (rc < 0) {
     xmlFreeTextWriter(writer);
     xmlFreeDoc(doc);
@@ -123,6 +123,11 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   xmlFreeTextWriter(writer);
   xmlFreeDoc(doc);
   return [NSString stringWithCString:(const char *)xmlbuff encoding:NSUTF8StringEncoding];
+}
+
++ (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root
+{
+  return [FBXPath xmlStringWithSnapshot:root query:nil];
 }
 
 + (NSArray<XCElementSnapshot *> *)findMatchesIn:(XCElementSnapshot *)root xpathQuery:(NSString *)xpathQuery

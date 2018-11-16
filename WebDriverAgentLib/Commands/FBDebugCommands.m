@@ -26,6 +26,8 @@
   @[
     [[FBRoute GET:@"/source"] respondWithTarget:self action:@selector(handleGetSourceCommand:)],
     [[FBRoute GET:@"/source"].withoutSession respondWithTarget:self action:@selector(handleGetSourceCommand:)],
+    [[FBRoute GET:@"/attr/:attributes/source"].withoutSession respondWithTarget:self action:@selector(handleGetSourceCommand:)],
+    [[FBRoute GET:@"/attr/:attributes/format/:sourceType/source"].withoutSession respondWithTarget:self action:@selector(handleGetSourceCommand:)],
     [[FBRoute GET:@"/wda/accessibleSource"] respondWithTarget:self action:@selector(handleGetAccessibleSourceCommand:)],
     [[FBRoute GET:@"/wda/accessibleSource"].withoutSession respondWithTarget:self action:@selector(handleGetAccessibleSourceCommand:)],
   ];
@@ -41,11 +43,17 @@ static NSString *const SOURCE_FORMAT_DESCRIPTION = @"description";
 + (id<FBResponsePayload>)handleGetSourceCommand:(FBRouteRequest *)request
 {
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+  NSString *attributes = request.parameters[@"attributes"];
+  if (attributes != nil) {
+    attributes = [attributes stringByReplacingOccurrencesOfString:@":" withString:@" @"];
+    attributes = [NSString stringWithFormat:@" @%@ ", attributes];
+  }
+  NSLog(@"%@", attributes);
   NSString *sourceType = request.parameters[@"format"] ?: SOURCE_FORMAT_XML;
   id result;
   if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_XML] == NSOrderedSame) {
     [application fb_waitUntilSnapshotIsStable];
-    result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot];
+    result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:attributes];
   } else if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_JSON] == NSOrderedSame) {
     result = application.fb_tree;
   } else if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_DESCRIPTION] == NSOrderedSame) {
