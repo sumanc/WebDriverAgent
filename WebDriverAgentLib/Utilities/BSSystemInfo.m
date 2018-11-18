@@ -14,13 +14,6 @@
 #import <UIKit/UIKit.h>
 #import "FBApplication.h"
 
-//typedef struct {
-//  unsigned int system;
-//  unsigned int user;
-//  unsigned int nice;
-//  unsigned int idle;
-//} CPUUsage;
-
 //
 double systemCpu(void) {
   kern_return_t kr;
@@ -28,7 +21,6 @@ double systemCpu(void) {
   static host_cpu_load_info_data_t previous_info = {0, 0, 0, 0};
   host_cpu_load_info_data_t info;
   
-  //  CPUUsage usage = {0, 0, 0, 1};
   count = HOST_CPU_LOAD_INFO_COUNT;
   
   kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&info, &count);
@@ -42,13 +34,8 @@ double systemCpu(void) {
   natural_t idle   = info.cpu_ticks[CPU_STATE_IDLE] - previous_info.cpu_ticks[CPU_STATE_IDLE];
   natural_t total  = user + nice + system + idle;
   previous_info    = info;
-  
-  //  usage.user = user;
-  //  usage.system = system;
-  //  usage.nice = nice;
-  //  usage.idle = idle;
+
   return (user + nice + system) * 100.0 / total;
-  //  return usage;
 }
 
 task_t get_task(pid_t pid_, task_t *task) {
