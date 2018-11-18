@@ -74,7 +74,7 @@ double cpu(pid_t pid) {
   task_info_count = TASK_INFO_MAX;
   kr = task_info(task, MACH_TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
   if (kr != KERN_SUCCESS) {
-    return -1;
+    return 0;
   }
   
   thread_array_t         thread_list;
@@ -88,7 +88,7 @@ double cpu(pid_t pid) {
   // get threads in the task
   kr = task_threads(task, &thread_list, &thread_count);
   if (kr != KERN_SUCCESS) {
-    return -1;
+    return 0;
   }
   
   long total_time     = 0;
@@ -102,7 +102,7 @@ double cpu(pid_t pid) {
     kr = thread_info(thread_list[j], THREAD_BASIC_INFO,
                      (thread_info_t)thinfo, &thread_info_count);
     if (kr != KERN_SUCCESS) {
-      return -1;
+      return 0;
     }
     
     basic_info_th = (thread_basic_info_t)thinfo;
@@ -116,7 +116,7 @@ double cpu(pid_t pid) {
   
   kr = vm_deallocate(mach_task_self(), (vm_offset_t)thread_list, thread_count * sizeof(thread_t));
   if (kr != KERN_SUCCESS) {
-    return -1;
+    return 0;
   }
   return total_cpu;
 }
