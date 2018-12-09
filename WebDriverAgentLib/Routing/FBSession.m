@@ -12,6 +12,9 @@
 
 #import <objc/runtime.h>
 
+#import "FBAlertsMonitor.h"
+#import "FBAlert.h"
+#import "FBLogger.h"
 #import "FBApplication.h"
 #import "FBElementCache.h"
 #import "FBMacros.h"
@@ -24,6 +27,36 @@ NSString *const FBApplicationCrashedException = @"FBApplicationCrashedException"
 
 @interface FBSession ()
 @property (nonatomic, strong, readwrite) FBApplication *testedApplication;
+@end
+
+@interface FBSession (FBAlertsMonitorDelegate)
+
+- (void)didDetectAlert:(FBAlert *)alert;
+
+@end
+
+@implementation FBSession (FBAlertsMonitorDelegate)
+
+- (void)didDetectAlert:(FBAlert *)alert
+{
+  if (nil == self.defaultAlertAction) {
+    return;
+  }
+  
+  NSError *error;
+  if ([self.defaultAlertAction isEqualToString:@"accept"]) {
+    if (![alert acceptWithError:&error]) {
+      [FBLogger logFmt:@"Cannot accept the alert. Original error: %@", error.description];
+    }
+  } else if ([self.defaultAlertAction isEqualToString:@"dismiss"]) {
+    if (![alert dismissWithError:&error]) {
+      [FBLogger logFmt:@"Cannot dismiss the alert. Original error: %@", error.description];
+    }
+  } else {
+    [FBLogger logFmt:@"'%@' default alert action is unsupported", self.defaultAlertAction];
+  }
+}
+
 @end
 
 @implementation FBSession
@@ -60,6 +93,17 @@ static FBSession *_activeSession;
   session.testedApplication = application;
   session.elementCache = [FBElementCache new];
   [FBSession markSessionActive:session];
+  return session;
+}
+
++ (instancetype)sessionWithApplication:(nullable FBApplication *)application defaultAlertAction:(NSString *)defaultAlertAction
+{
+  FBSession *session = [self.class sessionWithApplication:application];
+  session.alertsMonitor = [[FBAlertsMonitor alloc] init];
+  session.alertsMonitor.delegate = (id<FBAlertsMonitorDelegate>)session;
+  session.alertsMonitor.application = FBApplication.fb_activeApplication;
+  session.defaultAlertAction = [defaultAlertAction lowercaseString];
+  [session.alertsMonitor enable];
   return session;
 }
 

@@ -32,6 +32,8 @@ extern NSString *const FBAlertObstructingElementException;
  */
 + (instancetype)alertWithApplication:(XCUIApplication *)application;
 
++ (instancetype)alertWithElement:(XCUIElement *)element;
+
 /**
  Determines whether alert is present
  */

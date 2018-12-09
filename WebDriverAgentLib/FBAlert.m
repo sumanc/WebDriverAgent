@@ -65,6 +65,7 @@ NSString *const FBAlertObstructingElementException = @"FBAlertObstructingElement
 
 @interface FBAlert ()
 @property (nonatomic, strong) XCUIApplication *application;
+@property (nonatomic, strong, nullable) XCUIElement *element;
 @end
 
 @implementation FBAlert
@@ -78,6 +79,14 @@ NSString *const FBAlertObstructingElementException = @"FBAlertObstructingElement
 {
   FBAlert *alert = [FBAlert new];
   alert.application = application;
+  return alert;
+}
+
++ (instancetype)alertWithElement:(XCUIElement *)element
+{
+  FBAlert *alert = [FBAlert new];
+  alert.element = element;
+  alert.application = element.application;
   return alert;
 }
 

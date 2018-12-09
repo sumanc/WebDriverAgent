@@ -8,6 +8,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "FBAlertsMonitor.h"
 
 @class FBApplication;
 @class FBElementCache;
@@ -31,6 +32,9 @@ extern NSString *const FBApplicationCrashedException;
 /*! Element cache related to that session */
 @property (nonatomic, strong, readonly) FBElementCache *elementCache;
 
+@property (nonatomic, nullable) FBAlertsMonitor *alertsMonitor;
+@property (nonatomic, nullable) NSString *defaultAlertAction;
+
 + (nullable instancetype)activeSession;
 
 /**
@@ -49,6 +53,8 @@ extern NSString *const FBApplicationCrashedException;
  @return new session
  */
 + (instancetype)sessionWithApplication:(nullable FBApplication *)application;
+
++ (instancetype)sessionWithApplication:(nullable FBApplication *)application defaultAlertAction:(NSString *)defaultAlertAction;
 
 /**
  Kills application associated with that session and removes session
