@@ -43,6 +43,7 @@
     [[FBRoute GET:@"/wda/elementCache/size"] respondWithTarget:self action:@selector(handleGetElementCacheSizeCommand:)],
     [[FBRoute POST:@"/wda/elementCache/clear"] respondWithTarget:self action:@selector(handleClearElementCacheCommand:)],
     [[FBRoute POST:@"/wda/quiescence"] respondWithTarget:self action:@selector(handleQuiescence:)],
+    [[FBRoute POST:@"/wda/resetLocation"].withoutSession respondWithTarget:self action:@selector(handleResetLocationCommand:)],
   ];
 }
 
@@ -141,4 +142,23 @@
 //  [application setIdleAnimationWaitEnabled:idleAnimations];
   return FBResponseWithOK();
 }
+
++ (id<FBResponsePayload>)handleResetLocationCommand:(FBRouteRequest *)request
+{
+  XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.Preferences"];
+  [app launch];
+  XCUIElement *general = app.cells[@"General"];
+  if (general) {
+    [general.buttons[@"More Info"] tap];
+    XCUIElement *reset = app.cells[@"Reset"];
+    if (reset) {
+      [reset.buttons[@"More Info"] tap];
+      XCUIElement *button = app.cells[@"Reset Location & Privacy"];
+      [button tap];
+      [app.buttons[@"Reset Warnings"] tap];
+    }
+  }
+  return FBResponseWithOK();
+}
+
 @end
