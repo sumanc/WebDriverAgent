@@ -13,6 +13,7 @@
 
 #import "FBApplication.h"
 #import "FBConfiguration.h"
+#import "FBFindElementCommands.h"
 #import "FBExceptionHandler.h"
 #import "FBKeyboard.h"
 #import "FBResponsePayload.h"
@@ -146,19 +147,27 @@
 + (id<FBResponsePayload>)handleResetLocationCommand:(FBRouteRequest *)request
 {
   XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.Preferences"];
-  [app launch];
-  XCUIElement *general = app.cells[@"General"];
-  if (general) {
-    [general.buttons[@"More Info"] tap];
-    XCUIElement *reset = app.cells[@"Reset"];
-    if (reset) {
-      [reset.buttons[@"More Info"] tap];
-      XCUIElement *button = app.cells[@"Reset Location & Privacy"];
-      [button tap];
-      [app.buttons[@"Reset Warnings"] tap];
-    }
+  [app activate];
+
+  if ([self tap:@"Reset Location & Privacy" app:app]) {
+      [self tap:@"Reset Warnings" app:app];
+  }
+  else {
+    [self tap:@"General" app:app];
+    [self tap:@"Reset" app:app];
+    [self tap:@"Reset Location & Privacy" app:app];
+    [self tap:@"Reset Warnings" app:app];
   }
   return FBResponseWithOK();
+}
+
++ (BOOL)tap:(NSString *)name app:(XCUIApplication *)app {
+  NSArray *elements = [FBFindElementCommands elementsUsing:@"id" withValue:name under:app shouldReturnAfterFirstMatch:NO];
+  if (elements.count > 0) {
+    XCUIElement *element = elements[0];
+    return [element fb_tapWithError:nil];
+  }
+  return NO;
 }
 
 @end
