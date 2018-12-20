@@ -21,6 +21,7 @@
 #import "FBUnknownCommands.h"
 #import "FBConfiguration.h"
 #import "FBLogger.h"
+#import "FBApplication.h"
 
 #import "XCUIDevice+FBHelpers.h"
 
@@ -115,15 +116,15 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
 }
 
 - (void)performBackgroundTask {
-  static UIDeviceOrientation deviceOrientation;
+  static UIInterfaceOrientation deviceOrientation;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    deviceOrientation = [[XCUIDevice sharedDevice] orientation];
+    deviceOrientation = [[FBApplication fb_activeApplication] interfaceOrientation];;
   });
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     dispatch_async(dispatch_get_main_queue(), ^{
-      UIDeviceOrientation orientation = [[XCUIDevice sharedDevice] orientation];
-      if (orientation != UIDeviceOrientationUnknown && orientation != deviceOrientation) {
+      UIInterfaceOrientation orientation = [[FBApplication fb_activeApplication] interfaceOrientation];
+      if (orientation != deviceOrientation) {
         deviceOrientation = orientation;
         NSLog(@"MESMER: orientaion changed");
       }

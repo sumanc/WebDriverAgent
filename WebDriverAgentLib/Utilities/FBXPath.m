@@ -9,6 +9,7 @@
 
 #import "FBXPath.h"
 
+#import "FBApplication.h"
 #import "FBLogger.h"
 #import "XCAXClient_iOS.h"
 #import "XCTestDriver.h"
@@ -311,6 +312,14 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   return 0;
 }
 
++ (CGFloat)screenHeight {
+  UIInterfaceOrientation orientation = [[FBApplication fb_activeApplication] interfaceOrientation];
+  if (orientation == UIInterfaceOrientationIsPortrait(orientation)) {
+    return [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
+  }
+  return [UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].scale;
+}
+
 + (int)generateXMLPresentation:(XCElementSnapshot *)root indexPath:(nullable NSString *)indexPath elementStore:(nullable NSMutableDictionary *)elementStore includedAttributes:(nullable NSSet<Class> *)includedAttributes writer:(xmlTextWriterPtr)writer
 {
   NSAssert((indexPath == nil && elementStore == nil) || (indexPath != nil && elementStore != nil), @"Either both or none of indexPath and elementStore arguments should be equal to nil", nil);
@@ -323,7 +332,7 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
 
   rc = [FBXPath recordElementAttributes:writer forElement:root indexPath:indexPath includedAttributes:includedAttributes];
   if (rc < 0) {
-    return rc;
+    return 0;
   }
 
   NSArray *children = root.children;
@@ -333,6 +342,17 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
     if (elementStore != nil && newIndexPath != nil) {
       elementStore[newIndexPath] = childSnapshot;
     }
+    
+    NSString *class = [FBClassAttribute valueForElement:childSnapshot];
+    if ([class caseInsensitiveCompare:@"UICollectionViewCell"] == NSOrderedSame ||
+        [class caseInsensitiveCompare:@"UITableViewCell"] == NSOrderedSame) {
+      CGFloat y = [[childSnapshot.wdRect objectForKey:@"y"] floatValue];
+      CGFloat height = [self screenHeight];
+      if (y < 0 || height < y) {
+        continue;
+      }
+    }
+    
     rc = [self generateXMLPresentation:childSnapshot indexPath:newIndexPath elementStore:elementStore includedAttributes:includedAttributes writer:writer];
     if (rc < 0) {
       return rc;
@@ -382,6 +402,7 @@ static NSString *const FBAbstractMethodInvocationException = @"AbstractMethodInv
     // Skip the attribute if the value equals to nil
     return 0;
   }
+  
   int rc = xmlTextWriterWriteAttribute(writer, [FBXPath safeXmlStringWithString:[self name]], [FBXPath safeXmlStringWithString:value]);
   if (rc < 0) {
     [FBLogger logFmt:@"Failed to invoke libxml2>xmlTextWriterWriteAttribute(%@='%@'). Error code: %d", [self name], value, rc];
