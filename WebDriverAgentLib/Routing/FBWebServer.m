@@ -125,7 +125,7 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
       UIDeviceOrientation orientation = [[XCUIDevice sharedDevice] orientation];
       if (orientation != UIDeviceOrientationUnknown && orientation != deviceOrientation) {
         deviceOrientation = orientation;
-        NSLog(@"MESMER: orienataion changed");
+        NSLog(@"MESMER: orientaion changed");
       }
     });
   });
