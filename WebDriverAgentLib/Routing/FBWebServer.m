@@ -119,14 +119,15 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
   static UIInterfaceOrientation deviceOrientation;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    deviceOrientation = [[FBApplication fb_activeApplication] interfaceOrientation];;
+    deviceOrientation = [[FBApplication fb_activeApplication] interfaceOrientation];
+    NSLog(@"MESMER: Device Orientaion is %@", UIInterfaceOrientationIsPortrait(deviceOrientation) ? @"Portrait" : @"Landscape");
   });
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     dispatch_async(dispatch_get_main_queue(), ^{
       UIInterfaceOrientation orientation = [[FBApplication fb_activeApplication] interfaceOrientation];
       if (orientation != deviceOrientation) {
         deviceOrientation = orientation;
-        NSLog(@"MESMER: orientaion changed");
+        NSLog(@"MESMER: Device Orientaion changed to %@", UIInterfaceOrientationIsPortrait(deviceOrientation) ? @"Portrait" : @"Landscape");
       }
     });
   });
