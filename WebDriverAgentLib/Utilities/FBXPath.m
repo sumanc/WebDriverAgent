@@ -332,7 +332,7 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
 
   rc = [FBXPath recordElementAttributes:writer forElement:root indexPath:indexPath includedAttributes:includedAttributes];
   if (rc < 0) {
-    return 0;
+    return rc;
   }
 
   NSArray *children = root.children;
