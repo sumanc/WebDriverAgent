@@ -112,7 +112,7 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
 }
 
 - (void)startTimedTask {
-  [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(performBackgroundTask) userInfo:nil repeats:YES];
+  [NSTimer scheduledTimerWithTimeInterval:.2 target:self selector:@selector(performBackgroundTask) userInfo:nil repeats:YES];
 }
 
 - (void)performBackgroundTask {
