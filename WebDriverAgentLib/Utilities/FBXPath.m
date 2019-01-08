@@ -336,6 +336,7 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   }
 
   NSArray *children = root.children;
+  NSInteger visible = 0;
   for (NSUInteger i = 0; i < [children count]; i++) {
     XCElementSnapshot *childSnapshot = children[i];
     NSString *newIndexPath = (indexPath != nil) ? [indexPath stringByAppendingFormat:@",%lu", (unsigned long)i] : nil;
@@ -352,6 +353,12 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
       CGFloat height = [self screenHeight];
       if (y < 0 || height < y) {
         continue;
+      }
+      else {
+        visible++;
+      }
+      if (visible > 10) {
+        break;
       }
     }
     
