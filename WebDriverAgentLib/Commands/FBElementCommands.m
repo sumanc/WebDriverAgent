@@ -76,6 +76,7 @@
     [[FBRoute POST:@"/wda/dragfromtoforduration"] respondWithTarget:self action:@selector(handleDragCoordinate:)],
     [[FBRoute POST:@"/wda/dragfromtoforduration2"] respondWithTarget:self action:@selector(handleDragCoordinate2:)],
     [[FBRoute POST:@"/wda/tap/:uuid"] respondWithTarget:self action:@selector(handleTap:)],
+    [[FBRoute POST:@"/wda/tap2/:uuid"] respondWithTarget:self action:@selector(handleTap2:)],
     [[FBRoute POST:@"/wda/touchAndHold"] respondWithTarget:self action:@selector(handleTouchAndHoldCoordinate:)],
     [[FBRoute POST:@"/wda/doubleTap"] respondWithTarget:self action:@selector(handleDoubleTapCoordinate:)],
     [[FBRoute POST:@"/wda/keys"] respondWithTarget:self action:@selector(handleKeys:)],
@@ -475,6 +476,24 @@
   } else {
     NSError *error;
     if (![element fb_tapCoordinate:tapPoint error:&error]) {
+      return FBResponseWithError(error);
+    }
+  }
+  return FBResponseWithOK();
+}
+
++ (id<FBResponsePayload>)handleTap2:(FBRouteRequest *)request
+{
+  CGPoint tapPoint = CGPointMake((CGFloat)[request.arguments[@"x"] doubleValue], (CGFloat)[request.arguments[@"y"] doubleValue]);
+  
+  FBElementCache *elementCache = request.session.elementCache;
+  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
+  if (nil == element) {
+    XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+    [tapCoordinate tap];
+  } else {
+    NSError *error;
+    if (![element fb_tapCoordinate2:tapPoint error:&error]) {
       return FBResponseWithError(error);
     }
   }

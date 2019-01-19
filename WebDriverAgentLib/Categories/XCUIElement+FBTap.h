@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
  @return YES if the operation succeeds, otherwise NO.
  */
 - (BOOL)fb_tapCoordinate:(CGPoint)relativeCoordinate error:(NSError **)error;
+- (BOOL)fb_tapCoordinate2:(CGPoint)relativeCoordinate error:(NSError **)error;
 
 @end
 
