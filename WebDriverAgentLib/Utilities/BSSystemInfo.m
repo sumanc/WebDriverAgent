@@ -109,7 +109,7 @@ double cpu(pid_t pid) {
 }
 
 //
-vm_size_t memory(pid_t pid) {
+mach_vm_size_t memory(pid_t pid) {
   task_t task;
   int error = get_task(pid, &task);
   if (error < 0) {
@@ -185,9 +185,15 @@ NSDictionary *memoryUsage(void) {
 }
 
 NSDictionary *systemInfo(void) {
-  return @{@"cpu" : cpuUsage(),
-           @"mem" : memoryUsage(),
-           @"disk" : diskUsage(),
-           @"battery" : @(batteryLevel()),
-           };
+  @try {
+    return @{@"cpu" : cpuUsage(),
+             @"mem" : memoryUsage(),
+             @"disk" : diskUsage(),
+             @"battery" : @(batteryLevel()),
+             };
+  }
+  @catch (NSException *e) {
+    NSLog(@"Exception getitng system info: %@", e);
+  }
+  return @{};
 }
