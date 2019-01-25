@@ -40,6 +40,7 @@
 #import "XCUIElementQuery.h"
 #import "FBXCodeCompatibility.h"
 #import "XCEventGenerator.h"
+#import "FBXPath.h"
 
 @interface FBElementCommands ()
 @end
@@ -479,7 +480,9 @@
       return FBResponseWithError(error);
     }
   }
-  return FBResponseWithOK();
+  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+  id result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:nil point:tapPoint];
+  return FBResponseWithObject(result);
 }
 
 + (id<FBResponsePayload>)handleTap2:(FBRouteRequest *)request
@@ -497,7 +500,9 @@
       return FBResponseWithError(error);
     }
   }
-  return FBResponseWithOK();
+  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+  id result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:nil point:tapPoint];
+  return FBResponseWithObject(result);
 }
 
 + (id<FBResponsePayload>)handlePinch:(FBRouteRequest *)request

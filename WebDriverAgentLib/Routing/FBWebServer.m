@@ -109,7 +109,7 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
   }
   [FBLogger logFmt:@"%@http://%@:%d%@", FBServerURLBeginMarker, [XCUIDevice sharedDevice].fb_wifiIPAddress ?: @"localhost", [self.server port], FBServerURLEndMarker];
   
-  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"1.18.2019.1"];
+  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"1.24.2019.1"];
   [self startTimedTask];
 }
 

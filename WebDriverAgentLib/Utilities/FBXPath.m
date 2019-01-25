@@ -110,9 +110,14 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
 
 + (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query
 {
+  return [self xmlStringWithSnapshot:root query:query point:CGPointZero];
+}
+
++ (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query point:(CGPoint)point
+{
   xmlDocPtr doc;
   xmlTextWriterPtr writer = xmlNewTextWriterDoc(&doc, 0);
-  int rc = [FBXPath getSnapshotAsXML:(XCElementSnapshot *)root writer:writer elementStore:nil query:query];
+  int rc = [FBXPath getSnapshotAsXML:(XCElementSnapshot *)root writer:writer elementStore:nil query:query point:point];
   if (rc < 0) {
     xmlFreeTextWriter(writer);
     xmlFreeDoc(doc);
@@ -206,7 +211,11 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   return result.copy;
 }
 
-+ (int)getSnapshotAsXML:(XCElementSnapshot *)root writer:(xmlTextWriterPtr)writer elementStore:(nullable NSMutableDictionary *)elementStore query:(nullable NSString*)query
++ (int)getSnapshotAsXML:(XCElementSnapshot *)root writer:(xmlTextWriterPtr)writer elementStore:(nullable NSMutableDictionary *)elementStore query:(nullable NSString*)query {
+  return [self getSnapshotAsXML:root writer:writer elementStore:elementStore query:query point:CGPointZero];
+}
+
++ (int)getSnapshotAsXML:(XCElementSnapshot *)root writer:(xmlTextWriterPtr)writer elementStore:(nullable NSMutableDictionary *)elementStore query:(nullable NSString*)query point:(CGPoint)point
 {
   int rc = xmlTextWriterStartDocument(writer, NULL, _UTF8Encoding, NULL);
   if (rc < 0) {
@@ -215,7 +224,7 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   }
   // Trying to be smart here and only including attributes, that were asked in the query, to the resulting document.
   // This may speed up the lookup significantly in some cases
-  rc = [FBXPath generateXMLPresentation:root indexPath:(elementStore != nil ? topNodeIndexPath : nil) elementStore:elementStore includedAttributes:(query == nil ? nil : [self.class elementAttributesWithXPathQuery:query]) writer:writer];
+  rc = [FBXPath generateXMLPresentation:root indexPath:(elementStore != nil ? topNodeIndexPath : nil) elementStore:elementStore includedAttributes:(query == nil ? nil : [self.class elementAttributesWithXPathQuery:query]) writer:writer point:point];
   if (rc < 0) {
     [FBLogger log:@"Failed to generate XML presentation of a screen element"];
     return rc;
@@ -320,10 +329,19 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   return [UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].scale;
 }
 
-+ (int)generateXMLPresentation:(XCElementSnapshot *)root indexPath:(nullable NSString *)indexPath elementStore:(nullable NSMutableDictionary *)elementStore includedAttributes:(nullable NSSet<Class> *)includedAttributes writer:(xmlTextWriterPtr)writer
++ (int)generateXMLPresentation:(XCElementSnapshot *)root indexPath:(nullable NSString *)indexPath elementStore:(nullable NSMutableDictionary *)elementStore includedAttributes:(nullable NSSet<Class> *)includedAttributes writer:(xmlTextWriterPtr)writer {
+  return [self generateXMLPresentation:root indexPath:indexPath elementStore:elementStore includedAttributes:includedAttributes writer:writer point:CGPointZero];
+}
+
++ (int)generateXMLPresentation:(XCElementSnapshot *)root indexPath:(nullable NSString *)indexPath elementStore:(nullable NSMutableDictionary *)elementStore includedAttributes:(nullable NSSet<Class> *)includedAttributes writer:(xmlTextWriterPtr)writer point:(CGPoint)point
 {
   NSAssert((indexPath == nil && elementStore == nil) || (indexPath != nil && elementStore != nil), @"Either both or none of indexPath and elementStore arguments should be equal to nil", nil);
 
+  CGRect elementRect = root.wdFrame;
+  if (CGPointEqualToPoint(point, CGPointZero) == NO && CGRectContainsPoint(elementRect, point) == NO) {
+    return 0;
+  }
+  
   int rc = xmlTextWriterStartElement(writer, [FBXPath xmlCharPtrForInput:[root.wdType cStringUsingEncoding:NSUTF8StringEncoding]]);
   if (rc < 0) {
     [FBLogger logFmt:@"Failed to invoke libxml2>xmlTextWriterStartElement. Error code: %d", rc];
@@ -362,7 +380,7 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
       }
     }
     
-    rc = [self generateXMLPresentation:childSnapshot indexPath:newIndexPath elementStore:elementStore includedAttributes:includedAttributes writer:writer];
+    rc = [self generateXMLPresentation:childSnapshot indexPath:newIndexPath elementStore:elementStore includedAttributes:includedAttributes writer:writer point:point];
     if (rc < 0) {
       return rc;
     }
@@ -434,7 +452,8 @@ static NSString *const FBAbstractMethodInvocationException = @"AbstractMethodInv
            FBXAttribute.class,
            FBYAttribute.class,
            FBWidthAttribute.class,
-           FBHeightAttribute.class];
+           FBHeightAttribute.class
+           ];
 }
 
 @end

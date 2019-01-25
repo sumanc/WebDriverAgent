@@ -60,7 +60,7 @@ extern NSString *const FBXPathQueryEvaluationException;
 + (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root;
 
 + (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query;
-
++ (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query point:(CGPoint)point;
 @end
 
 NS_ASSUME_NONNULL_END
