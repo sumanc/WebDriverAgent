@@ -78,6 +78,7 @@
     [[FBRoute POST:@"/wda/dragfromtoforduration2"] respondWithTarget:self action:@selector(handleDragCoordinate2:)],
     [[FBRoute POST:@"/wda/tap/:uuid"] respondWithTarget:self action:@selector(handleTap:)],
     [[FBRoute POST:@"/wda/tap2/:uuid"] respondWithTarget:self action:@selector(handleTap2:)],
+    [[FBRoute POST:@"/wda/tap3/:uuid"] respondWithTarget:self action:@selector(handleTap3:)],
     [[FBRoute POST:@"/wda/touchAndHold"] respondWithTarget:self action:@selector(handleTouchAndHoldCoordinate:)],
     [[FBRoute POST:@"/wda/doubleTap"] respondWithTarget:self action:@selector(handleDoubleTapCoordinate:)],
     [[FBRoute POST:@"/wda/keys"] respondWithTarget:self action:@selector(handleKeys:)],
@@ -480,9 +481,7 @@
       return FBResponseWithError(error);
     }
   }
-  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
-  id result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:nil point:tapPoint];
-  return FBResponseWithObject(result);
+  return FBResponseWithOK();
 }
 
 + (id<FBResponsePayload>)handleTap2:(FBRouteRequest *)request
@@ -497,6 +496,59 @@
   } else {
     NSError *error;
     if (![element fb_tapCoordinate2:tapPoint error:&error]) {
+      return FBResponseWithError(error);
+    }
+  }
+  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+  id result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:nil point:tapPoint];
+  return FBResponseWithObject(result);
+}
+
++ (id<FBResponsePayload>)handleTap3:(FBRouteRequest *)request
+{
+  CGPoint tapPoint = CGPointMake((CGFloat)[request.arguments[@"x"] doubleValue], (CGFloat)[request.arguments[@"y"] doubleValue]);
+  
+  XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
+  NSArray *alerts = [[app alerts] allElementsBoundByIndex];
+  if (alerts.count > 0) {
+    XCUIElement *alert = alerts[0];
+    NSArray *texts = [[alert staticTexts] allElementsBoundByIndex];
+    NSString *title = [texts[0] label];
+    NSString *subtitle = texts.count > 1 ? [texts[1] label] : @"";
+    NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
+    for (XCUIElement *button in buttons) {
+      if (CGRectContainsPoint(button.frame, tapPoint)) {
+        NSString *label = [button label];
+        [button tap];
+        return FBResponseWithStatus(FBCommandStatusNoError, @{
+                                                              @"action": @"tap",
+                                                              @"element": @"button",
+                                                              @"id": label,
+                                                              @"point": @{
+                                                                  @"x": @(tapPoint.x),
+                                                                  @"y": @(tapPoint.y)
+                                                                  },
+                                                              @"alert":@{
+                                                                  @"title" : title != nil ? title : @"",
+                                                                  @"subtitle" : subtitle != nil ? subtitle : @""
+                                                                  }
+                                                              });
+      }
+    }
+    
+    if (alerts.count > 0) {
+      return FBResponseWithStatus(FBCommandStatusUnexpectedAlertPresent, @"A modal dialog was open, blocking this operation");
+    }
+  }
+  
+  FBElementCache *elementCache = request.session.elementCache;
+  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
+  if (nil == element) {
+    XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+    [tapCoordinate tap];
+  } else {
+    NSError *error;
+    if (![element fb_tapCoordinate:tapPoint error:&error]) {
       return FBResponseWithError(error);
     }
   }
