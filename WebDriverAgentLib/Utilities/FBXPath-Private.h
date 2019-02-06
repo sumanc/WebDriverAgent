@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (int)getSnapshotAsXML:(XCElementSnapshot *)root writer:(xmlTextWriterPtr)writer elementStore:(nullable NSMutableDictionary *)elementStore query:(nullable NSString*)query;
 
 + (int)getSnapshotAsXML:(XCElementSnapshot *)root writer:(xmlTextWriterPtr)writer elementStore:(nullable NSMutableDictionary *)elementStore query:(nullable NSString*)query point:(CGPoint)point;
+
++ (int)getSnapshotAsXML:(XCElementSnapshot *)root writer:(xmlTextWriterPtr)writer elementStore:(nullable NSMutableDictionary *)elementStore query:(nullable NSString*)query point:(CGPoint)point maxCells:(NSInteger)maxCells;
 /**
  Gets the list of matched snapshots from xmllib2-compatible xmlNodeSetPtr structure
  

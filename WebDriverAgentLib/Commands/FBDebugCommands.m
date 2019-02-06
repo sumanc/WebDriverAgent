@@ -48,12 +48,18 @@ static NSString *const SOURCE_FORMAT_DESCRIPTION = @"description";
     attributes = [attributes stringByReplacingOccurrencesOfString:@":" withString:@" @"];
     attributes = [NSString stringWithFormat:@" @%@ ", attributes];
   }
+  NSString *maxCells = request.parameters[@"maxcells"];
+  NSInteger maxCellsToReturn = -1;
+  if (maxCells != nil) {
+    maxCellsToReturn = [maxCells integerValue];
+  }
+  NSLog(@"%@", maxCells);
   NSLog(@"%@", attributes);
   NSString *sourceType = request.parameters[@"format"] ?: SOURCE_FORMAT_XML;
   id result;
   if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_XML] == NSOrderedSame) {
     [application fb_waitUntilSnapshotIsStable];
-    result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:attributes];
+    result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:attributes maxCells:maxCellsToReturn];
   } else if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_JSON] == NSOrderedSame) {
     result = application.fb_tree;
   } else if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_DESCRIPTION] == NSOrderedSame) {

@@ -58,8 +58,8 @@ extern NSString *const FBXPathQueryEvaluationException;
  @return valid XML document as string or nil in case of failure
  */
 + (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root;
-
 + (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query;
++ (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query maxCells:(NSInteger)maxCells;
 + (nullable NSString *)xmlStringWithSnapshot:(XCElementSnapshot *)root query:(nullable NSString *)query point:(CGPoint)point;
 @end
 
