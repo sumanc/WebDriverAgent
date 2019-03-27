@@ -439,6 +439,7 @@
   
   XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
   NSArray *alerts = [[app alerts] allElementsBoundByIndex];
+  NSLog(@"### TIVO DEBUG: alerts count: %ld", alerts.count);
   if (alerts.count > 0) {
     XCUIElement *alert = alerts[0];
     NSArray *texts = [[alert staticTexts] allElementsBoundByIndex];
@@ -448,6 +449,7 @@
     for (XCUIElement *button in buttons) {
       if (CGRectContainsPoint(button.frame, tapPoint)) {
         NSString *label = [button label];
+        NSLog(@"### TIVO DEBUG: found alert button to tap: %@", label);
         [button tap];
         return FBResponseWithStatus(FBCommandStatusNoError, @{
                                                               @"action": @"tap",
