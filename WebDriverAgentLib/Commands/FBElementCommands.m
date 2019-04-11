@@ -79,6 +79,7 @@
     [[FBRoute POST:@"/wda/tap/:uuid"] respondWithTarget:self action:@selector(handleTap:)],
     [[FBRoute POST:@"/wda/tap2/:uuid"] respondWithTarget:self action:@selector(handleTap2:)],
     [[FBRoute POST:@"/wda/tap3/:uuid"] respondWithTarget:self action:@selector(handleTap3:)],
+    [[FBRoute POST:@"/wda/findAndTap"] respondWithTarget:self action:@selector(handleFindAndTap:)],
     [[FBRoute POST:@"/wda/touchAndHold"] respondWithTarget:self action:@selector(handleTouchAndHoldCoordinate:)],
     [[FBRoute POST:@"/wda/doubleTap"] respondWithTarget:self action:@selector(handleDoubleTapCoordinate:)],
     [[FBRoute POST:@"/wda/keys"] respondWithTarget:self action:@selector(handleKeys:)],
@@ -557,6 +558,33 @@
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
   id result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:nil point:tapPoint];
   return FBResponseWithObject(result);
+}
+
++ (id<FBResponsePayload>)handleFindAndTap:(FBRouteRequest *)request
+{
+//  CGPoint origin = CGPointMake((CGFloat)[request.arguments[@"x"] doubleValue], (CGFloat)[request.arguments[@"y"] doubleValue]);
+//  CGFloat width = [request.arguments[@"width"] doubleValue];
+//  CGFloat height = [request.arguments[@"height"] doubleValue];
+  NSString *type = request.arguments[@"type"];
+  NSString *text = request.arguments[@"text"];
+  
+  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+
+  XCUIElementType elementType = XCUIElementTypeOther;
+  if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame) {
+    elementType = XCUIElementTypeButton;
+  }
+  
+  if (elementType != XCUIElementTypeOther) {
+    for (XCUIElement *child in [application descendantsMatchingType:elementType].allElementsBoundByIndex) {
+      if ([child.label caseInsensitiveCompare:text] == NSOrderedSame ||
+          [child.wdName caseInsensitiveCompare:text] == NSOrderedSame) {
+        [child tap];
+        return FBResponseWithOK();
+      }
+    }
+  }
+  return FBResponseWithErrorFormat(@"Not found");
 }
 
 + (id<FBResponsePayload>)handlePinch:(FBRouteRequest *)request
