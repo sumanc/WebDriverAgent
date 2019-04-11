@@ -580,7 +580,7 @@
       if ([child.label caseInsensitiveCompare:text] == NSOrderedSame ||
           [child.wdName caseInsensitiveCompare:text] == NSOrderedSame) {
         [child tap];
-        return FBResponseWithOK();
+        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
       }
     }
   }
