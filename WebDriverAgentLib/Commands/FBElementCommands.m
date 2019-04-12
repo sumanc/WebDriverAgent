@@ -562,14 +562,17 @@
 
 + (id<FBResponsePayload>)handleFindAndTap:(FBRouteRequest *)request
 {
-//  CGPoint origin = CGPointMake((CGFloat)[request.arguments[@"x"] doubleValue], (CGFloat)[request.arguments[@"y"] doubleValue]);
-//  CGFloat width = [request.arguments[@"width"] doubleValue];
-//  CGFloat height = [request.arguments[@"height"] doubleValue];
+
+  CGFloat x = [request.arguments[@"x"] doubleValue];
+  CGFloat y = [request.arguments[@"y"] doubleValue];
+  CGFloat width = [request.arguments[@"width"] doubleValue];
+  CGFloat height = [request.arguments[@"height"] doubleValue];
   NSString *type = request.arguments[@"type"];
   NSString *label = request.arguments[@"label"];
   NSString *name = request.arguments[@"name"];
   NSString *value = request.arguments[@"value"];
   
+  CGPoint tapPoint = CGPointMake(x + (width + x)/2, y + (height + y)/2);
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
 
   XCUIElementType elementType = XCUIElementTypeOther;
@@ -592,8 +595,14 @@
         compare = [value caseInsensitiveCompare:childValue] == NSOrderedSame;
       }
       if (compare) {
-        [child tap];
+//        [child tap];
+        XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+        [tapCoordinate tap];
         return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+//        NSError *error;
+//        if ([child fb_tapCoordinate:tapPoint error:&error]) {
+//          return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+//        }
       }
     }
   }
