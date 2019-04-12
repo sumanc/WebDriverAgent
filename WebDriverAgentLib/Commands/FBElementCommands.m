@@ -562,17 +562,15 @@
 
 + (id<FBResponsePayload>)handleFindAndTap:(FBRouteRequest *)request
 {
-
-  CGFloat x = [request.arguments[@"x"] doubleValue];
-  CGFloat y = [request.arguments[@"y"] doubleValue];
-  CGFloat width = [request.arguments[@"width"] doubleValue];
-  CGFloat height = [request.arguments[@"height"] doubleValue];
+//  CGFloat x = [request.arguments[@"x"] doubleValue];
+//  CGFloat y = [request.arguments[@"y"] doubleValue];
+//  CGFloat width = [request.arguments[@"width"] doubleValue];
+//  CGFloat height = [request.arguments[@"height"] doubleValue];
   NSString *type = request.arguments[@"type"];
   NSString *label = request.arguments[@"label"];
-  NSString *name = request.arguments[@"name"];
-  NSString *value = request.arguments[@"value"];
+//  NSString *name = request.arguments[@"name"];
+//  NSString *value = request.arguments[@"value"];
   
-  CGPoint tapPoint = CGPointMake(x + (width + x)/2, y + (height + y)/2);
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
 
   XCUIElementType elementType = XCUIElementTypeOther;
@@ -581,30 +579,55 @@
   }
   
   if (elementType != XCUIElementTypeOther) {
-    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
-    for (XCUIElement *child in children) {
-      BOOL compare = NO;
-      if (label != nil) {
-        compare = [label caseInsensitiveCompare:child.label] == NSOrderedSame;
-      }
-      else if (name != nil) {
-        compare = [name caseInsensitiveCompare:child.wdName] == NSOrderedSame;
-      }
-      else if (value != nil) {
-        NSString *childValue = child.wdValue;
-        compare = [value caseInsensitiveCompare:childValue] == NSOrderedSame;
-      }
-      if (compare) {
-//        [child tap];
-        XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
-        [tapCoordinate tap];
-        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-//        NSError *error;
-//        if ([child fb_tapCoordinate:tapPoint error:&error]) {
-//          return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-//        }
-      }
+//    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
+    
+    NSString *matchString =  [NSString stringWithFormat: @".*\\b%@.*", label];
+    NSString *predicateString = @"label MATCHES[c] %@";
+    NSPredicate *predicate =[NSPredicate predicateWithFormat: predicateString, matchString];
+    XCUIElement *element = [[application descendantsMatchingType:elementType] elementMatchingPredicate:predicate];
+//    NSString *wdtype = element.wdType;
+//    NSString *desc = element.description;
+//    NSLog(@"%@, %@", wdtype, desc);
+    if ([element exists]) {
+      NSDictionary *rect = [element wdRect];
+      CGFloat x = [[rect objectForKey:@"x"] doubleValue];
+      CGFloat y = [[rect objectForKey:@"y"] doubleValue];
+      //        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
+      //        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
+      CGPoint tapPoint = CGPointMake(x, y); //(x + (width + x)/2, y + (height + y)/2);
+      XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+      [tapCoordinate tap];
+      return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+
     }
+//    for (XCUIElement *child in children) {
+//      BOOL compare = NO;
+//      if (label != nil) {
+//        compare = [label caseInsensitiveCompare:child.label] == NSOrderedSame;
+//      }
+//      else if (name != nil) {
+//        compare = [name caseInsensitiveCompare:child.wdName] == NSOrderedSame;
+//      }
+//      else if (value != nil) {
+//        NSString *childValue = child.wdValue;
+//        compare = [value caseInsensitiveCompare:childValue] == NSOrderedSame;
+//      }
+//      if (compare) {
+//        NSDictionary *rect = [child wdRect];
+//        CGFloat x = [[rect objectForKey:@"x"] doubleValue];
+//        CGFloat y = [[rect objectForKey:@"y"] doubleValue];
+////        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
+////        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
+//        CGPoint tapPoint = CGPointMake(x, y); //(x + (width + x)/2, y + (height + y)/2);
+//        XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+//        [tapCoordinate tap];
+//        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+////        NSError *error;
+////        if ([child fb_tapCoordinate:tapPoint error:&error]) {
+////          return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+////        }
+//      }
+//    }
   }
   return FBResponseWithErrorFormat(@"Not found");
 }
