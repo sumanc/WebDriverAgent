@@ -566,7 +566,9 @@
 //  CGFloat width = [request.arguments[@"width"] doubleValue];
 //  CGFloat height = [request.arguments[@"height"] doubleValue];
   NSString *type = request.arguments[@"type"];
-  NSString *text = request.arguments[@"text"];
+  NSString *label = request.arguments[@"label"];
+  NSString *name = request.arguments[@"name"];
+  NSString *value = request.arguments[@"value"];
   
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
 
@@ -576,9 +578,20 @@
   }
   
   if (elementType != XCUIElementTypeOther) {
-    for (XCUIElement *child in [application descendantsMatchingType:elementType].allElementsBoundByIndex) {
-      if ([child.label caseInsensitiveCompare:text] == NSOrderedSame ||
-          [child.wdName caseInsensitiveCompare:text] == NSOrderedSame) {
+    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
+    for (XCUIElement *child in children) {
+      BOOL compare = NO;
+      if (label != nil) {
+        compare = [label caseInsensitiveCompare:child.label] == NSOrderedSame;
+      }
+      else if (name != nil) {
+        compare = [name caseInsensitiveCompare:child.wdName] == NSOrderedSame;
+      }
+      else if (value != nil) {
+        NSString *childValue = child.wdValue;
+        compare = [value caseInsensitiveCompare:childValue] == NSOrderedSame;
+      }
+      if (compare) {
         [child tap];
         return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
       }
