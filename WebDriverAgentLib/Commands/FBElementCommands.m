@@ -568,11 +568,37 @@
 //  CGFloat height = [request.arguments[@"height"] doubleValue];
   NSString *type = request.arguments[@"type"];
   NSString *label = request.arguments[@"label"];
-//  NSString *name = request.arguments[@"name"];
-//  NSString *value = request.arguments[@"value"];
+  NSString *name = request.arguments[@"name"];
+  NSString *value = request.arguments[@"value"];
   
+  NSString *query = nil;
+  NSString *queryValue = nil;
+  if (label != nil) {
+    query = @"label";
+    queryValue = label;
+  }
+  else if (name != nil) {
+    query = @"name";
+    queryValue = name;
+  }
+  else if (value != nil) {
+    query = @"value";
+    queryValue = value;
+  }
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
-
+//
+//  NSArray *alerts = [[application alerts] allElementsBoundByIndex];
+//  if (alerts.count > 0) {
+//    XCUIElement *alert = alerts[0];
+//    NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
+//    for (XCUIElement *button in buttons) {
+//      if ([button.label caseInsensitiveCompare:label] == NSOrderedSame) {
+//        [button tap];
+//        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+//      }
+//    }
+//  }
+  
   XCUIElementType elementType = XCUIElementTypeOther;
   if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame) {
     elementType = XCUIElementTypeButton;
@@ -581,24 +607,25 @@
   if (elementType != XCUIElementTypeOther) {
 //    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
     
-    NSString *matchString =  [NSString stringWithFormat: @".*\\b%@.*", label];
-    NSString *predicateString = @"label MATCHES[c] %@";
-    NSPredicate *predicate =[NSPredicate predicateWithFormat: predicateString, matchString];
+    NSString *matchString = [NSString stringWithFormat: @".*\\b%@.*", queryValue];
+    NSString *predicateString = [NSString stringWithFormat:@"%@ MATCHES[c] %%@", query];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat: predicateString, matchString];
     XCUIElement *element = [[application descendantsMatchingType:elementType] elementMatchingPredicate:predicate];
-//    NSString *wdtype = element.wdType;
-//    NSString *desc = element.description;
-//    NSLog(@"%@, %@", wdtype, desc);
     if ([element exists]) {
+//      NSString *wdname = element.wdName;
+//      NSString *wdvalue = element.wdValue;
+//      id evalue = element.value;
+//      NSLog(@"%@, %@, %@", wdname, wdvalue, evalue);
       NSDictionary *rect = [element wdRect];
       CGFloat x = [[rect objectForKey:@"x"] doubleValue];
       CGFloat y = [[rect objectForKey:@"y"] doubleValue];
       //        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
       //        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
-      CGPoint tapPoint = CGPointMake(x, y); //(x + (width + x)/2, y + (height + y)/2);
+      CGPoint tapPoint = CGPointMake(x + 2, y + 2); //(x + (width + x)/2, y + (height + y)/2);
       XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
       [tapCoordinate tap];
       return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-
     }
 //    for (XCUIElement *child in children) {
 //      BOOL compare = NO;
