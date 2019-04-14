@@ -586,18 +586,18 @@
     queryValue = value;
   }
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
-//
-//  NSArray *alerts = [[application alerts] allElementsBoundByIndex];
-//  if (alerts.count > 0) {
-//    XCUIElement *alert = alerts[0];
-//    NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
-//    for (XCUIElement *button in buttons) {
-//      if ([button.label caseInsensitiveCompare:label] == NSOrderedSame) {
-//        [button tap];
-//        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-//      }
-//    }
-//  }
+
+  NSArray *alerts = [[application alerts] allElementsBoundByIndex];
+  if (alerts.count > 0 && label != nil) {
+    XCUIElement *alert = alerts[0];
+    NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
+    for (XCUIElement *button in buttons) {
+      if ([button.label caseInsensitiveCompare:label] == NSOrderedSame) {
+        [button tap];
+        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+      }
+    }
+  }
   
   XCUIElementType elementType = XCUIElementTypeOther;
   if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame) {
