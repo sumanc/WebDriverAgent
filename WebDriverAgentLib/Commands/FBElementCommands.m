@@ -448,7 +448,7 @@
   
   NSLog(@"### TIVO DEBUG 2: alerts count: %ld", allAlerts.count);
   if (allAlerts.count > 0) {
-    XCUIElement *alert = alerts[0];
+    XCUIElement *alert = allAlerts[0];
     NSArray *texts = [[alert staticTexts] allElementsBoundByIndex];
     NSString *title = [texts[0] label];
     NSString *subtitle = texts.count > 1 ? [texts[1] label] : @"";
