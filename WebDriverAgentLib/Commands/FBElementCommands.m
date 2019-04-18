@@ -440,8 +440,14 @@
   
   XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
   NSArray *alerts = [[app alerts] allElementsBoundByIndex];
-  NSLog(@"### TIVO DEBUG: alerts count: %ld", alerts.count);
-  if (alerts.count > 0) {
+  
+  FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
+  NSArray *appAlerts = [[application alerts] allElementsBoundByIndex];
+  
+  NSArray *allAlerts = [alerts arrayByAddingObjectsFromArray:appAlerts];
+  
+  NSLog(@"### TIVO DEBUG 2: alerts count: %ld", allAlerts.count);
+  if (allAlerts.count > 0) {
     XCUIElement *alert = alerts[0];
     NSArray *texts = [[alert staticTexts] allElementsBoundByIndex];
     NSString *title = [texts[0] label];
@@ -450,7 +456,7 @@
     for (XCUIElement *button in buttons) {
       if (CGRectContainsPoint(button.frame, tapPoint)) {
         NSString *label = [button label];
-        NSLog(@"### TIVO DEBUG: found alert button to tap: %@", label);
+        NSLog(@"### TIVO DEBUG 2: found alert button to tap: %@", label);
         [button tap];
         return FBResponseWithStatus(FBCommandStatusNoError, @{
                                                               @"action": @"tap",
@@ -468,7 +474,7 @@
       }
     }
     
-    if (alerts.count > 0) {
+    if (allAlerts.count > 0) {
       return FBResponseWithStatus(FBCommandStatusUnexpectedAlertPresent, @"A modal dialog was open, blocking this operation");
     }
   }
