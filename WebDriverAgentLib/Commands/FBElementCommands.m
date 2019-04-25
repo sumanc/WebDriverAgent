@@ -89,6 +89,103 @@
   ];
 }
 
++ (XCUIElementType)elementTypeFromName:(NSString *)name {
+  static NSDictionary<NSString *, NSNumber *> *typeToNameDict;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    typeToNameDict = @{
+                       @"Any" : @0,
+                       @"Other" : @1,
+                       @"Application" : @2,
+                       @"Group" : @3,
+                       @"Window" : @4,
+                       @"Sheet" : @5,
+                       @"Drawer" : @6,
+                       @"Alert" : @7,
+                       @"Dialog" : @8,
+                       @"Button" : @9,
+                       @"RadioButton" : @10,
+                       @"RadioGroup" : @11,
+                       @"CheckBox" : @12,
+                       @"DisclosureTriangle" : @13,
+                       @"PopUpButton" : @14,
+                       @"ComboBox" : @15,
+                       @"MenuButton" : @16,
+                       @"ToolbarButton" : @17,
+                       @"Popover" : @18,
+                       @"Keyboard" : @19,
+                       @"Key" : @20,
+                       @"NavigationBar" : @21,
+                       @"TabBar" : @22,
+                       @"TabGroup" : @23,
+                       @"Toolbar" : @24,
+                       @"StatusBar" : @25,
+                       @"Table" : @26,
+                       @"TableRow" : @27,
+                       @"TableColumn" : @28,
+                       @"Outline" : @29,
+                       @"OutlineRow" : @30,
+                       @"Browser" : @31,
+                       @"CollectionView" : @32,
+                       @"Slider" : @33,
+                       @"PageIndicator" : @34,
+                       @"ProgressIndicator" : @35,
+                       @"ActivityIndicator" : @36,
+                       @"SegmentedControl" : @37,
+                       @"Picker" : @38,
+                       @"PickerWheel" : @39,
+                       @"Switch" : @40,
+                       @"Toggle" : @41,
+                       @"Link" : @42,
+                       @"Image" : @43,
+                       @"Icon" : @44,
+                       @"SearchField" : @45,
+                       @"ScrollView" : @46,
+                       @"ScrollBar" : @47,
+                       @"StaticText" : @48,
+                       @"TextField" : @49,
+                       @"SecureTextField" : @50,
+                       @"DatePicker" : @51,
+                       @"TextView" : @52,
+                       @"Menu" : @53,
+                       @"MenuItem" : @54,
+                       @"MenuBar" : @55,
+                       @"MenuBarItem" : @56,
+                       @"Map" : @57,
+                       @"WebView" : @58,
+                       @"IncrementArrow" : @59,
+                       @"DecrementArrow" : @60,
+                       @"Timeline" : @61,
+                       @"RatingIndicator" : @62,
+                       @"ValueIndicator" : @63,
+                       @"SplitGroup" : @64,
+                       @"Splitter" : @65,
+                       @"RelevanceIndicator" : @66,
+                       @"ColorWell" : @67,
+                       @"HelpTag" : @68,
+                       @"Matte" : @69,
+                       @"DockItem" : @70,
+                       @"Ruler" : @71,
+                       @"RulerMarker" : @72,
+                       @"Grid" : @73,
+                       @"LevelIndicator" : @74,
+                       @"Cell" : @75,
+                       @"LayoutArea" : @76,
+                       @"LayoutItem" : @77,
+                       @"Handle" : @78,
+                       @"Stepper" : @79,
+                       @"Tab" : @80,
+                       @"TouchBar" : @81,
+                       @"StatusItem" : @82
+                       };
+  });
+  
+  NSNumber *ret = [typeToNameDict objectForKey:name];
+  if (ret == nil) {
+    return -1;
+  }
+  return [ret integerValue];
+}
 
 #pragma mark - Commands
 
@@ -573,44 +670,32 @@
 //  CGFloat width = [request.arguments[@"width"] doubleValue];
 //  CGFloat height = [request.arguments[@"height"] doubleValue];
   NSString *type = request.arguments[@"type"];
-  NSString *label = request.arguments[@"label"];
-  NSString *name = request.arguments[@"name"];
-  NSString *value = request.arguments[@"value"];
+  NSString *query = request.arguments[@"query"];
+  NSString *queryValue = request.arguments[@"queryValue"];
+  if (type == nil) {
+      return FBResponseWithErrorFormat(@"type is missing");
+  }
   
-  NSString *query = nil;
-  NSString *queryValue = nil;
-  if (label != nil) {
-    query = @"label";
-    queryValue = label;
+  XCUIElementType elementType = [self elementTypeFromName:type];
+  if (elementType == (XCUIElementType)-1) {
+    return FBResponseWithErrorFormat(@"Type %@ is invalid", type);
   }
-  else if (name != nil) {
-    query = @"name";
-    queryValue = name;
-  }
-  else if (value != nil) {
-    query = @"value";
-    queryValue = value;
-  }
+
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
 
   NSArray *alerts = [[application alerts] allElementsBoundByIndex];
-  if (alerts.count > 0 && label != nil) {
+  if (alerts.count > 0 && queryValue != nil) {
     XCUIElement *alert = alerts[0];
     NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
     for (XCUIElement *button in buttons) {
-      if ([button.label caseInsensitiveCompare:label] == NSOrderedSame) {
+      if ([button.label caseInsensitiveCompare:queryValue] == NSOrderedSame) {
         [button tap];
         return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
       }
     }
   }
-  
-  XCUIElementType elementType = XCUIElementTypeOther;
-  if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame) {
-    elementType = XCUIElementTypeButton;
-  }
-  
-  if (elementType != XCUIElementTypeOther) {
+
+//  if (elementType != XCUIElementTypeOther) {
 //    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
     
     NSString *matchString = [NSString stringWithFormat: @".*\\b%@.*", queryValue];
@@ -632,7 +717,7 @@
       XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
       [tapCoordinate tap];
       return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-    }
+//    }
 //    for (XCUIElement *child in children) {
 //      BOOL compare = NO;
 //      if (label != nil) {
