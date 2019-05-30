@@ -376,9 +376,14 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
     if ([class caseInsensitiveCompare:@"UICollectionViewCell"] == NSOrderedSame ||
         [class caseInsensitiveCompare:@"UITableViewCell"] == NSOrderedSame ||
         [type caseInsensitiveCompare:@"XCUIElementTypeCell"] == NSOrderedSame) {
+      
+      //TODO: This logic still has some issue in rare cases. See replay wda for proper fix.
+      //Fixing cell filteration [b4a2ab594df90ae2e3647e35a2b4ceed4d27815f]
       CGFloat y = [[childSnapshot.wdRect objectForKey:@"y"] floatValue];
+      CGFloat rowHeight = [[childSnapshot.wdRect objectForKey:@"height"] floatValue];
       CGFloat height = [self screenHeight];
-      if (y < 0 || height < y) {
+      //[FBLogger logFmt:@"%f <-> %f <-> %f", y, rowHeight, height];
+      if ((y + rowHeight) < 0 || height < y) {
         continue;
       }
       else {
