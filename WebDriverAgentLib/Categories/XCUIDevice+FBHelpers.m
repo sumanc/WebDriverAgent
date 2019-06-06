@@ -117,8 +117,10 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
 //  return [mainScreen screenshotDataForQuality:quality rect:screenRect error:error];
   
   XCUIScreenshot *screenshot = [mainScreen screenshot];
-  NSData *result = [screenshot PNGRepresentation];
-  return result;
+//  NSData *result = [screenshot PNGRepresentation];
+//  return result;
+  UIImage *screenImage = [screenshot image];
+  return UIImageJPEGRepresentation(screenImage, 0.0f);
 }
 
 
