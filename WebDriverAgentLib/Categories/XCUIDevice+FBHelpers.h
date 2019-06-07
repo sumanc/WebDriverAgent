@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param error If there is an error, upon return contains an NSError object that describes the problem.
  @return Device screenshot as PNG-encoded data or nil in case of failure
  */
-- (nullable NSData *)fb_screenshotHighWithError:(NSError*__autoreleasing*)error;
+- (nullable NSData *)fb_screenshotHighWithError:(NSError*__autoreleasing*)error quality:(double)quality type:(NSString *)type;
 
 /**
  Returns device current wifi ip4 address

@@ -8,7 +8,8 @@
  */
 
 #import "FBScreenshotCommands.h"
-
+#import "FBRoute.h"
+#import "FBRouteRequest.h"
 #import "XCUIDevice+FBHelpers.h"
 
 @implementation FBScreenshotCommands
@@ -21,6 +22,9 @@
   @[
     [[FBRoute GET:@"/screenshot"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshot:)],
     [[FBRoute GET:@"/screenshotHigh"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh:)],
+    [[FBRoute GET:@"/screenshotHigh/quality/:quality"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh:)],
+    [[FBRoute GET:@"/screenshotHigh/type/:type"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh:)],
+    [[FBRoute GET:@"/screenshotHigh/quality/:quality/type/:type"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh:)],
     [[FBRoute GET:@"/screenshot"] respondWithTarget:self action:@selector(handleGetScreenshot:)],
   ];
 }
@@ -42,7 +46,16 @@
 + (id<FBResponsePayload>)handleGetScreenshotHigh:(FBRouteRequest *)request
 {
   NSError *error;
-  NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error];
+  double quality = [request.parameters[@"quality"] doubleValue];
+  NSString *type = request.parameters[@"type"];
+  NSLog(@"%f, %@", quality, type);
+  if (quality < 0.0 || quality > 1.0) {
+    quality = 0.0;
+  }
+  if (type == nil || ([type caseInsensitiveCompare:@"jpeg"] != NSOrderedSame && [type caseInsensitiveCompare:@"png"] != NSOrderedSame)) {
+    type = @"jpeg";
+  }
+  NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:quality type:type];
   if (nil == screenshotData) {
     return FBResponseWithError(error);
   }

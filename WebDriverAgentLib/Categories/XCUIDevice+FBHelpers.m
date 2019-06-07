@@ -94,7 +94,7 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
 //  return (NSData *)UIImagePNGRepresentation(image);
 }
 
-- (NSData *)fb_screenshotHighWithError:(NSError*__autoreleasing*)error
+- (NSData *)fb_screenshotHighWithError:(NSError*__autoreleasing*)error quality:(double)quality type:(NSString *)type
 {
   Class xcScreenClass = objc_lookUpClass("XCUIScreen");
   if (nil == xcScreenClass) {
@@ -117,10 +117,15 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
 //  return [mainScreen screenshotDataForQuality:quality rect:screenRect error:error];
   
   XCUIScreenshot *screenshot = [mainScreen screenshot];
-//  NSData *result = [screenshot PNGRepresentation];
-//  return result;
-  UIImage *screenImage = [screenshot image];
-  return UIImageJPEGRepresentation(screenImage, 0.0f);
+  NSData *result = nil;
+  if (type == nil || [type caseInsensitiveCompare:@"jpeg"] == NSOrderedSame) {
+    UIImage *screenImage = [screenshot image];
+    result = UIImageJPEGRepresentation(screenImage, quality);
+  }
+  else {
+      result = [screenshot PNGRepresentation];
+  }
+  return result;
 }
 
 
