@@ -28,6 +28,7 @@
 #import "XCUIElement.h"
 #import "XCUIElement+FBIsVisible.h"
 #import "XCUIElementQuery.h"
+#import "SocketRocket.h"
 
 @implementation FBCustomCommands
 
@@ -45,6 +46,8 @@
     [[FBRoute POST:@"/wda/elementCache/clear"] respondWithTarget:self action:@selector(handleClearElementCacheCommand:)],
     [[FBRoute POST:@"/wda/quiescence"] respondWithTarget:self action:@selector(handleQuiescence:)],
     [[FBRoute POST:@"/wda/resetLocation"].withoutSession respondWithTarget:self action:@selector(handleResetLocationCommand:)],
+    [[FBRoute POST:@"/screenCast"].withoutSession respondWithTarget:self action:@selector(handleScreenCast:)],
+    [[FBRoute POST:@"/stopScreenCast"].withoutSession respondWithTarget:self action:@selector(handleStopScreenCast:)],
   ];
 }
 
@@ -168,6 +171,61 @@
     return [element fb_tapWithError:nil];
   }
   return NO;
+}
+
+static NSTimer *kTimer = nil;
+static SRWebSocket *kSRWebSocket;
+
++ (id<FBResponsePayload>)handleScreenCast:(FBRouteRequest *)request
+{
+  NSInteger fps = [request.arguments[@"fps"] integerValue];
+  NSString *url = request.arguments[@"url"];
+
+  if (fps <= 0 || fps > 10) {
+    fps = 10;
+  }
+  if (url == nil) {
+      return FBResponseWithObject(@"Missing URL");
+  }
+  
+  if (kTimer != nil) {
+    [kTimer invalidate];
+  }
+  if (kSRWebSocket != nil) {
+    [kSRWebSocket close];
+  }
+  
+  NSURL *nsURL = [NSURL URLWithString:url];
+  kSRWebSocket = [[SRWebSocket alloc] initWithURL:nsURL securityPolicy:[SRSecurityPolicy defaultPolicy]];
+  [kSRWebSocket open];
+  kTimer = [NSTimer scheduledTimerWithTimeInterval:1/fps target:self selector:@selector(performScreenCast:) userInfo:nil repeats:YES];
+  return FBResponseWithOK();
+}
+
++ (id<FBResponsePayload>)handleStopScreenCast:(FBRouteRequest *)request
+{
+  if (kTimer != nil) {
+    [kTimer invalidate];
+    kTimer = nil;
+  }
+  if (kSRWebSocket != nil) {
+    [kSRWebSocket close];
+  }
+  return FBResponseWithOK();
+}
+
++ (void)performScreenCast:(NSTimer*)timer {
+  NSError *error = nil;
+  NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:0.0 type:@"jpeg"];
+  if (screenshotData != nil && error == nil) {
+    [kSRWebSocket sendData:screenshotData error:&error];
+    if (error) {
+      NSLog(@"Error sending screenshot: %@", error);
+    }
+  }
+  else {
+    NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
+  }
 }
 
 @end

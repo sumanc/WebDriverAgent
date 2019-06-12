@@ -17,4 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#ifndef LockMeNow_GraphicsServices_h
+#define LockMeNow_GraphicsServices_h
+
+//extern void GSEventLockDevice();
+
+#endif
+
 NS_ASSUME_NONNULL_END

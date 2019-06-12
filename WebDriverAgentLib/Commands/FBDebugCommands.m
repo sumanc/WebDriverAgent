@@ -57,6 +57,7 @@ static NSString *const SOURCE_FORMAT_DESCRIPTION = @"description";
   NSLog(@"%@", attributes);
   NSString *sourceType = request.parameters[@"format"] ?: SOURCE_FORMAT_XML;
   id result;
+//  int visible = 0;
   if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_XML] == NSOrderedSame) {
     [application fb_waitUntilSnapshotIsStable];
     result = [FBXPath xmlStringWithSnapshot:application.fb_lastSnapshot query:attributes maxCells:maxCellsToReturn];
@@ -65,6 +66,14 @@ static NSString *const SOURCE_FORMAT_DESCRIPTION = @"description";
   } else if ([sourceType caseInsensitiveCompare:SOURCE_FORMAT_DESCRIPTION] == NSOrderedSame) {
     NSMutableArray<NSString *> *childrenDescriptions = [NSMutableArray array];
     for (XCUIElement *child in [application childrenMatchingType:XCUIElementTypeAny].allElementsBoundByIndex) {
+//      XCElementSnapshot *elementSnapshot = child.fb_lastSnapshot;
+//      NSDictionary *additionalAttrinutes = elementSnapshot.additionalAttributes;
+//      NSString *class = [additionalAttrinutes objectForKey:@5004];
+//      if ([child elementType] == XCUIElementTypeCell) {
+//        if (maxCellsToReturn > 0 && visible++ > maxCellsToReturn) {
+//          break;
+//        }
+//      }
       [childrenDescriptions addObject:child.debugDescription];
     }
     // debugDescription property of XCUIApplication instance shows descendants addresses in memory
