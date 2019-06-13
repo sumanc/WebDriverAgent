@@ -9,8 +9,9 @@
 /* Begin PBXBuildFile section */
 		18033EFF208761FC00FED81D /* RoutingHTTPServer.framework in Copy frameworks */ = {isa = PBXBuildFile; fileRef = AD42DD2B1CF1238500806E5D /* RoutingHTTPServer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1FC3B2E32121ECF600B61EE0 /* FBApplicationProcessProxyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FC3B2E12121EC8C00B61EE0 /* FBApplicationProcessProxyTests.m */; };
-		2543B79822ADF285008DC421 /* SocketRocket-iOS-Static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2543B79722ADF285008DC421 /* SocketRocket-iOS-Static.a */; };
-		2543B79A22ADF297008DC421 /* Headers in Resources */ = {isa = PBXBuildFile; fileRef = 2543B79922ADF297008DC421 /* Headers */; };
+		2543B7C422B2EAC9008DC421 /* libSocketRocketSim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2543B7C322B2EAC9008DC421 /* libSocketRocketSim.a */; };
+		2543B7C922B2F4DB008DC421 /* SocketRocket in Resources */ = {isa = PBXBuildFile; fileRef = 2543B7C822B2F4DB008DC421 /* SocketRocket */; };
+		2543B7F022B2F7A4008DC421 /* libSocketRocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2543B7EF22B2F7A4008DC421 /* libSocketRocket.a */; };
 		2589A4E321950720002E4D53 /* BSSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2589A4E121950720002E4D53 /* BSSystemInfo.h */; };
 		2589A4E421950720002E4D53 /* BSSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2589A4E221950720002E4D53 /* BSSystemInfo.m */; };
 		258E79BB21BD84280074C025 /* FBAlertsMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 258E79B921BD84280074C025 /* FBAlertsMonitor.h */; };
@@ -422,8 +423,9 @@
 
 /* Begin PBXFileReference section */
 		1FC3B2E12121EC8C00B61EE0 /* FBApplicationProcessProxyTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBApplicationProcessProxyTests.m; sourceTree = "<group>"; };
-		2543B79722ADF285008DC421 /* SocketRocket-iOS-Static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "SocketRocket-iOS-Static.a"; sourceTree = "<group>"; };
-		2543B79922ADF297008DC421 /* Headers */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Headers; sourceTree = "<group>"; };
+		2543B7C322B2EAC9008DC421 /* libSocketRocketSim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSocketRocketSim.a; path = SocketRocket/libSocketRocketSim.a; sourceTree = "<group>"; };
+		2543B7C822B2F4DB008DC421 /* SocketRocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SocketRocket; sourceTree = "<group>"; };
+		2543B7EF22B2F7A4008DC421 /* libSocketRocket.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSocketRocket.a; path = SocketRocket/libSocketRocket.a; sourceTree = "<group>"; };
 		2589A4E121950720002E4D53 /* BSSystemInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BSSystemInfo.h; sourceTree = "<group>"; };
 		2589A4E221950720002E4D53 /* BSSystemInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BSSystemInfo.m; sourceTree = "<group>"; };
 		258E79B921BD84280074C025 /* FBAlertsMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBAlertsMonitor.h; sourceTree = "<group>"; };
@@ -768,11 +770,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2543B79822ADF285008DC421 /* SocketRocket-iOS-Static.a in Frameworks */,
 				7174AF041D9D39AF008C8AD5 /* libxml2.tbd in Frameworks */,
 				AD35D0641CF1C2C300870A75 /* RoutingHTTPServer.framework in Frameworks */,
 				EEEA70152110605600C8ADE3 /* XCTest.framework in Frameworks */,
 				EEEA70152110605600C8ADE2 /* XCTAutomationSupport.framework in Frameworks */,
+				2543B7F022B2F7A4008DC421 /* libSocketRocket.a in Frameworks */,
+				2543B7C422B2EAC9008DC421 /* libSocketRocketSim.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -842,6 +845,7 @@
 		91F9DAE01B99DBC2001349B2 = {
 			isa = PBXGroup;
 			children = (
+				2543B7C822B2F4DB008DC421 /* SocketRocket */,
 				EEE5CABE1C80361500CBBDD9 /* Configurations */,
 				91F9DB731B99DDD8001349B2 /* PrivateHeaders */,
 				498495C81BB2E6FA009CC848 /* Resources */,
@@ -911,12 +915,12 @@
 		B6E83A410C45944B036B6B0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2543B79922ADF297008DC421 /* Headers */,
-				2543B79722ADF285008DC421 /* SocketRocket-iOS-Static.a */,
 				EE8980D321105B49001789EE /* XCTest.framework */,
 				EE8980D321105B49001789ED /* XCTAutomationSupport.framework */,
 				7174AF031D9D39AF008C8AD5 /* libxml2.tbd */,
 				AD35D0671CF1C2DA00870A75 /* iOS */,
+				2543B7C322B2EAC9008DC421 /* libSocketRocketSim.a */,
+				2543B7EF22B2F7A4008DC421 /* libSocketRocket.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1754,7 +1758,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE2EAAA21CC6693900A3AB19 /* WebDriverAgent.bundle in Resources */,
-				2543B79A22ADF297008DC421 /* Headers in Resources */,
+				2543B7C922B2F4DB008DC421 /* SocketRocket in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2172,7 +2176,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/include/libxml2",
 					"$(SRCROOT)/Modules",
-					"\"$(SRCROOT)/Headers\"/**",
+					"\"$(SRCROOT)/SocketRocket/include\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentLib/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -2181,6 +2185,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/SocketRocket",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentLib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2212,7 +2217,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/include/libxml2",
 					"$(SRCROOT)/Modules",
-					"\"$(SRCROOT)/Headers\"/**",
+					"\"$(SRCROOT)/SocketRocket/include\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentLib/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -2221,6 +2226,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/SocketRocket",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentLib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2384,6 +2390,10 @@
 				INFOPLIST_FILE = WebDriverAgentRunner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SocketRocket",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-all_load",
@@ -2409,6 +2419,10 @@
 				INFOPLIST_FILE = WebDriverAgentRunner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SocketRocket",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-all_load",

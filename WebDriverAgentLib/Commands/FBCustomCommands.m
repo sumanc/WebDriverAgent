@@ -175,13 +175,14 @@
 
 static NSTimer *kTimer = nil;
 static SRWebSocket *kSRWebSocket;
+static NSData *kLastImageData;
 
 + (id<FBResponsePayload>)handleScreenCast:(FBRouteRequest *)request
 {
   NSInteger fps = [request.arguments[@"fps"] integerValue];
   NSString *url = request.arguments[@"url"];
 
-  if (fps <= 0 || fps > 10) {
+  if (fps <= 0) {
     fps = 10;
   }
   if (url == nil) {
@@ -211,21 +212,31 @@ static SRWebSocket *kSRWebSocket;
   if (kSRWebSocket != nil) {
     [kSRWebSocket close];
   }
+  kLastImageData = nil;
   return FBResponseWithOK();
 }
 
 + (void)performScreenCast:(NSTimer*)timer {
-  NSError *error = nil;
-  NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:0.0 type:@"jpeg"];
-  if (screenshotData != nil && error == nil) {
-    [kSRWebSocket sendData:screenshotData error:&error];
-    if (error) {
-      NSLog(@"Error sending screenshot: %@", error);
+//  dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+    NSError *error = nil;
+    NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:0.0 type:@"jpeg"];
+    if (screenshotData != nil && error == nil) {
+      if ([kLastImageData isEqualToData:screenshotData]) {
+        return;
+      }
+      kLastImageData = screenshotData;
+      [kSRWebSocket sendData:screenshotData error:&error];
+      if (error) {
+        NSLog(@"Error sending screenshot: %@", error);
+      }
+      else {
+        //log the time it took to transport
+      }
     }
-  }
-  else {
-    NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
-  }
+    else {
+      NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
+    }
+//  });
 }
 
 @end

@@ -120,7 +120,10 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
   NSData *result = nil;
   if (type == nil || [type caseInsensitiveCompare:@"jpeg"] == NSOrderedSame) {
     UIImage *screenImage = [screenshot image];
-    result = UIImageJPEGRepresentation(screenImage, quality);
+    if (screenImage.size.height <= 1.0) {
+      return nil;
+    }
+    result = UIImageJPEGRepresentation(screenImage, (CGFloat)quality);
   }
   else {
       result = [screenshot PNGRepresentation];
