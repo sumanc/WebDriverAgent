@@ -116,17 +116,23 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
   XCUIScreen *mainScreen = (XCUIScreen *)[xcScreenClass mainScreen];
 //  return [mainScreen screenshotDataForQuality:quality rect:screenRect error:error];
   
-  XCUIScreenshot *screenshot = [mainScreen screenshot];
   NSData *result = nil;
-  if (type == nil || [type caseInsensitiveCompare:@"jpeg"] == NSOrderedSame) {
-    UIImage *screenImage = [screenshot image];
-    if (screenImage.size.height <= 1.0) {
-      return nil;
+  
+  @try {
+    XCUIScreenshot *screenshot = [mainScreen screenshot];
+    if (type == nil || [type caseInsensitiveCompare:@"jpeg"] == NSOrderedSame) {
+      UIImage *screenImage = [screenshot image];
+      if (screenImage.size.height <= 1.0) {
+        return nil;
+      }
+      result = UIImageJPEGRepresentation(screenImage, (CGFloat)quality);
     }
-    result = UIImageJPEGRepresentation(screenImage, (CGFloat)quality);
-  }
-  else {
+    else {
       result = [screenshot PNGRepresentation];
+    }
+  }
+  @catch (NSException *exception) {
+    NSLog(@"failed to get screenshot: %@", exception);
   }
   return result;
 }
