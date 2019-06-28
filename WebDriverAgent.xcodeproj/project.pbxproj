@@ -12,6 +12,12 @@
 		2543B7C422B2EAC9008DC421 /* libSocketRocketSim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2543B7C322B2EAC9008DC421 /* libSocketRocketSim.a */; };
 		2543B7C922B2F4DB008DC421 /* SocketRocket in Resources */ = {isa = PBXBuildFile; fileRef = 2543B7C822B2F4DB008DC421 /* SocketRocket */; };
 		2543B7F022B2F7A4008DC421 /* libSocketRocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2543B7EF22B2F7A4008DC421 /* libSocketRocket.a */; };
+		257B1C3B22C686DD005D96EC /* tensorflow_lite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 257B1C3A22C686DD005D96EC /* tensorflow_lite.framework */; };
+		257B1C4122C68842005D96EC /* BSWDataModelHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 257B1C3F22C68842005D96EC /* BSWDataModelHandler.h */; };
+		257B1C4222C68842005D96EC /* BSWDataModelHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 257B1C4022C68842005D96EC /* BSWDataModelHandler.mm */; };
+		257B1C4A22C68FB2005D96EC /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 257B1C4922C68FB2005D96EC /* Accelerate.framework */; };
+		257B1C6622C6A165005D96EC /* labels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 257B1C6422C6A163005D96EC /* labels.txt */; };
+		257B1C6722C6A165005D96EC /* model.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 257B1C6522C6A164005D96EC /* model.tflite */; };
 		2589A4E321950720002E4D53 /* BSSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2589A4E121950720002E4D53 /* BSSystemInfo.h */; };
 		2589A4E421950720002E4D53 /* BSSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2589A4E221950720002E4D53 /* BSSystemInfo.m */; };
 		258E79BB21BD84280074C025 /* FBAlertsMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 258E79B921BD84280074C025 /* FBAlertsMonitor.h */; };
@@ -426,6 +432,13 @@
 		2543B7C322B2EAC9008DC421 /* libSocketRocketSim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSocketRocketSim.a; path = SocketRocket/libSocketRocketSim.a; sourceTree = "<group>"; };
 		2543B7C822B2F4DB008DC421 /* SocketRocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SocketRocket; sourceTree = "<group>"; };
 		2543B7EF22B2F7A4008DC421 /* libSocketRocket.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSocketRocket.a; path = SocketRocket/libSocketRocket.a; sourceTree = "<group>"; };
+		257B1C3A22C686DD005D96EC /* tensorflow_lite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = tensorflow_lite.framework; path = WebDriverAgentLib/Frameworks/tensorflow_lite.framework; sourceTree = "<group>"; };
+		257B1C3F22C68842005D96EC /* BSWDataModelHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BSWDataModelHandler.h; sourceTree = "<group>"; };
+		257B1C4022C68842005D96EC /* BSWDataModelHandler.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BSWDataModelHandler.mm; sourceTree = "<group>"; };
+		257B1C4722C68F6A005D96EC /* Model */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Model; sourceTree = "<group>"; };
+		257B1C4922C68FB2005D96EC /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		257B1C6422C6A163005D96EC /* labels.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = labels.txt; sourceTree = "<group>"; };
+		257B1C6522C6A164005D96EC /* model.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = model.tflite; sourceTree = "<group>"; };
 		2589A4E121950720002E4D53 /* BSSystemInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BSSystemInfo.h; sourceTree = "<group>"; };
 		2589A4E221950720002E4D53 /* BSSystemInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BSSystemInfo.m; sourceTree = "<group>"; };
 		258E79B921BD84280074C025 /* FBAlertsMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBAlertsMonitor.h; sourceTree = "<group>"; };
@@ -770,6 +783,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				257B1C4A22C68FB2005D96EC /* Accelerate.framework in Frameworks */,
+				257B1C3B22C686DD005D96EC /* tensorflow_lite.framework in Frameworks */,
 				7174AF041D9D39AF008C8AD5 /* libxml2.tbd in Frameworks */,
 				AD35D0641CF1C2C300870A75 /* RoutingHTTPServer.framework in Frameworks */,
 				EEEA70152110605600C8ADE3 /* XCTest.framework in Frameworks */,
@@ -834,6 +849,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		257B1C3E22C6881C005D96EC /* MesmerAI */ = {
+			isa = PBXGroup;
+			children = (
+				257B1C4722C68F6A005D96EC /* Model */,
+				257B1C3F22C68842005D96EC /* BSWDataModelHandler.h */,
+				257B1C4022C68842005D96EC /* BSWDataModelHandler.mm */,
+			);
+			path = MesmerAI;
+			sourceTree = "<group>";
+		};
 		498495C81BB2E6FA009CC848 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -845,6 +870,8 @@
 		91F9DAE01B99DBC2001349B2 = {
 			isa = PBXGroup;
 			children = (
+				257B1C6422C6A163005D96EC /* labels.txt */,
+				257B1C6522C6A164005D96EC /* model.tflite */,
 				2543B7C822B2F4DB008DC421 /* SocketRocket */,
 				EEE5CABE1C80361500CBBDD9 /* Configurations */,
 				91F9DB731B99DDD8001349B2 /* PrivateHeaders */,
@@ -915,6 +942,8 @@
 		B6E83A410C45944B036B6B0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				257B1C4922C68FB2005D96EC /* Accelerate.framework */,
+				257B1C3A22C686DD005D96EC /* tensorflow_lite.framework */,
 				EE8980D321105B49001789EE /* XCTest.framework */,
 				EE8980D321105B49001789ED /* XCTAutomationSupport.framework */,
 				7174AF031D9D39AF008C8AD5 /* libxml2.tbd */,
@@ -1224,6 +1253,7 @@
 		EEC288F81BF0ED2500B4DC79 /* WebDriverAgentLib */ = {
 			isa = PBXGroup;
 			children = (
+				257B1C3E22C6881C005D96EC /* MesmerAI */,
 				EE9AB73E1CAEDF0C008C271F /* Categories */,
 				EE9AB74F1CAEDF0C008C271F /* Commands */,
 				EE9AB7721CAEDF0C008C271F /* Resources */,
@@ -1476,6 +1506,7 @@
 				EE158AC21CBD456F00A3E3F0 /* FBInspectorCommands.h in Headers */,
 				EE158AF91CBD456F00A3E3F0 /* FBApplicationProcessProxy.h in Headers */,
 				EE35AD671E3B77D600A02D78 /* XCTWaiterDelegatePrivate-Protocol.h in Headers */,
+				257B1C4122C68842005D96EC /* BSWDataModelHandler.h in Headers */,
 				EE35AD4D1E3B77D600A02D78 /* XCTestManager_IDEInterface-Protocol.h in Headers */,
 				258E79C021BD85CD0074C025 /* XCUIApplication+FBAlert.h in Headers */,
 				711084441DA3AA7500F913D6 /* FBXPath.h in Headers */,
@@ -1759,6 +1790,8 @@
 			files = (
 				EE2EAAA21CC6693900A3AB19 /* WebDriverAgent.bundle in Resources */,
 				2543B7C922B2F4DB008DC421 /* SocketRocket in Resources */,
+				257B1C6622C6A165005D96EC /* labels.txt in Resources */,
+				257B1C6722C6A165005D96EC /* model.tflite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1846,6 +1879,7 @@
 				EE158AF81CBD456F00A3E3F0 /* FBSpringboardApplication.m in Sources */,
 				EE158AD91CBD456F00A3E3F0 /* FBResponseFilePayload.m in Sources */,
 				EEE3764A1D59FAE900ED88DD /* XCUIElement+FBWebDriverAttributes.m in Sources */,
+				257B1C4222C68842005D96EC /* BSWDataModelHandler.mm in Sources */,
 				EE8DDD7E20C5733C004D4925 /* XCUIElement+FBForceTouch.m in Sources */,
 				EE158ACB1CBD456F00A3E3F0 /* FBTouchIDCommands.m in Sources */,
 				EE158ABD1CBD456F00A3E3F0 /* FBDebugCommands.m in Sources */,
@@ -2157,6 +2191,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEE5CABF1C80361500CBBDD9 /* ProjectSettings.xcconfig */;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				CURRENT_PROJECT_VERSION = 1;
@@ -2172,11 +2207,13 @@
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 					"$(PROJECT_DIR)/XCTUITestRunner",
 					"$(PROJECT_DIR)/**",
+					"$(PROJECT_DIR)/WebDriverAgentLib/Frameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/include/libxml2",
 					"$(SRCROOT)/Modules",
 					"\"$(SRCROOT)/SocketRocket/include\"",
+					"\"$(SRCROOT)/WebDriverAgentLib/Frameworks/tensorflow_lite.framework/Headers\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentLib/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -2186,6 +2223,18 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/SocketRocket",
+					"$(PROJECT_DIR)/Tensorflow",
+				);
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"\"$(SRCROOT)/Tensorflow/Headers/tensorflow\"",
+					"-isystem",
+					"\"$(SRCROOT)/Tensorflow/Headers/flatbuffers\"",
+				);
+				OTHER_LDFLAGS = (
+					"-l\"c++\"",
+					"-ObjC",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentLib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2199,6 +2248,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEE5CABF1C80361500CBBDD9 /* ProjectSettings.xcconfig */;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				CURRENT_PROJECT_VERSION = 1;
@@ -2213,11 +2263,13 @@
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 					"$(PROJECT_DIR)/XCTUITestRunner",
 					"$(PROJECT_DIR)/**",
+					"$(PROJECT_DIR)/WebDriverAgentLib/Frameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/include/libxml2",
 					"$(SRCROOT)/Modules",
 					"\"$(SRCROOT)/SocketRocket/include\"",
+					"\"$(SRCROOT)/WebDriverAgentLib/Frameworks/tensorflow_lite.framework/Headers\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentLib/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -2227,6 +2279,18 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/SocketRocket",
+					"$(PROJECT_DIR)/Tensorflow",
+				);
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"\"$(SRCROOT)/Tensorflow/Headers/tensorflow\"",
+					"-isystem",
+					"\"$(SRCROOT)/Tensorflow/Headers/flatbuffers\"",
+				);
+				OTHER_LDFLAGS = (
+					"-l\"c++\"",
+					"-ObjC",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentLib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2379,6 +2443,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEE5CABF1C80361500CBBDD9 /* ProjectSettings.xcconfig */;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = U96363L4E2;
@@ -2409,6 +2474,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EEE5CABF1C80361500CBBDD9 /* ProjectSettings.xcconfig */;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				DEVELOPMENT_TEAM = U96363L4E2;
 				FRAMEWORK_SEARCH_PATHS = (
