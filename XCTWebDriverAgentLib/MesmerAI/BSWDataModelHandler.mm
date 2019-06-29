@@ -147,8 +147,8 @@ void GetTopN(
     _labels.push_back(line);
   }
   t.close();
-  
-  tflite::InterpreterBuilder(*_model, _resolver)(&_interpreter);
+    tflite::ops::builtin::BuiltinOpResolver resolver;
+  tflite::InterpreterBuilder(*_model, resolver)(&_interpreter);
 
   int input = _interpreter->inputs()[0];
   std::vector<int> sizes = {1, 224, 224, 3};
@@ -163,6 +163,11 @@ void GetTopN(
   return YES;
 }
 
+- (BOOL)runModelOnImage:(UIImage *)image {
+  CVPixelBufferRef pixelBuffer = [self pixelBufferFromCGImage:[image CGImage]];
+  return [self runModelOnFrame:pixelBuffer];
+}
+
 - (BOOL)runModelOnFrame:(CVPixelBufferRef)pixelBuffer {
   if (pixelBuffer == NULL) {
     NSLog(@"Invalid pixel buffer");
@@ -170,8 +175,11 @@ void GetTopN(
   }
   
   OSType sourcePixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
-  assert(sourcePixelFormat == kCVPixelFormatType_32ARGB ||
-         sourcePixelFormat == kCVPixelFormatType_32BGRA);
+  if (sourcePixelFormat != kCVPixelFormatType_32ARGB &&
+      sourcePixelFormat != kCVPixelFormatType_32BGRA) {
+    NSLog(@"Invalid pixel buffer");
+    return NO;
+  }
   
   const int sourceRowBytes = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
   const int image_width = (int)CVPixelBufferGetWidth(pixelBuffer);
@@ -211,7 +219,7 @@ void GetTopN(
   }
   
   const int image_channels = 4;
-  if (image_channels >= _wanted_input_channels) {
+  if (image_channels < _wanted_input_channels) {
     NSLog(@"Invalid image_channels");
   }
   if (is_quantized) {
@@ -367,6 +375,48 @@ void GetTopN(
       break;
     }
   }
+}
+
+- (CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)image
+{
+  CGSize frameSize = CGSizeMake(CGImageGetWidth(image), CGImageGetHeight(image));
+  NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+                           [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
+                           [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
+                           nil];
+  CVPixelBufferRef pxbuffer = NULL;
+  CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault, frameSize.width,
+                                        frameSize.height,  kCVPixelFormatType_32ARGB, (CFDictionaryRef) CFBridgingRetain(options),
+                                        &pxbuffer);
+  NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
+  
+  CVPixelBufferLockBaseAddress(pxbuffer, 0);
+  void *pxdata = CVPixelBufferGetBaseAddress(pxbuffer);
+  
+  
+  CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
+  
+  CGContextRef context = CGBitmapContextCreate(
+                                               pxdata, frameSize.width, frameSize.height,
+                                               8, CVPixelBufferGetBytesPerRow(pxbuffer),
+                                               rgbColorSpace,
+                                               (CGBitmapInfo)kCGBitmapByteOrder32Little |
+                                               kCGImageAlphaPremultipliedFirst);
+  
+  CGContextConcatCTM(context, CGAffineTransformMakeRotation(0));
+  CGAffineTransform flipVertical = CGAffineTransformMake( 1, 0, 0, -1, 0, CGImageGetHeight(image) );
+  CGContextConcatCTM(context, flipVertical);
+  CGAffineTransform flipHorizontal = CGAffineTransformMake( -1.0, 0.0, 0.0, 1.0, CGImageGetWidth(image), 0.0 );
+  CGContextConcatCTM(context, flipHorizontal);
+  
+  CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image),
+                                         CGImageGetHeight(image)), image);
+  CGColorSpaceRelease(rgbColorSpace);
+  CGContextRelease(context);
+  
+  CVPixelBufferUnlockBaseAddress(pxbuffer, 0);
+  
+  return pxbuffer;
 }
 
 @end

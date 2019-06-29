@@ -6,6 +6,7 @@
 //  Copyright © 2019 Facebook. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <CoreImage/CoreImage.h>
 #import <ImageIO/ImageIO.h>
@@ -15,6 +16,7 @@
 + (BSWDataModelHandler *) sharedInstance;
 - (BOOL)loadModel:(NSString *)modelFileName modelFileExtn:(NSString *)modelFileExtn labels:(NSString *)labelFileName labelsFileExtn:(NSString *)labelFileExtn;
 - (BOOL)runModelOnFrame:(CVPixelBufferRef)pixelBuffer;
+- (BOOL)runModelOnImage:(UIImage *)image;
 
 @end
 
