@@ -6,6 +6,8 @@
 //  Copyright © 2019 Facebook. All rights reserved.
 //
 
+#import <Accelerate/Accelerate.h>
+
 #import "BSWDataModelHandler.h"
 
 #include <fstream>
@@ -27,6 +29,10 @@ const float _input_mean = 127.5f;
 const float _input_std = 127.5f;
 const std::string _input_layer_name = "input";
 const std::string _output_layer_name = "softmax1";
+
+void PixelBufferReleaseCallback(void *releaseRefCon, const void *baseAddress) {
+  free((void *)baseAddress);
+}
 
 // Preprocess the input image and feed the TFLite interpreter buffer for a float model.
 void ProcessInputWithFloatModel(
@@ -165,7 +171,110 @@ void GetTopN(
 
 - (BOOL)runModelOnImage:(UIImage *)image {
   CVPixelBufferRef pixelBuffer = [self pixelBufferFromCGImage:[image CGImage]];
-  return [self runModelOnFrame:pixelBuffer];
+  OSType sourcePixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
+  if (sourcePixelFormat != kCVPixelFormatType_32ARGB &&
+      sourcePixelFormat != kCVPixelFormatType_32BGRA) {
+    NSLog(@"Invalid pixel buffer");
+    return NO;
+  }
+  
+  // Crops the image to the biggest square in the center and scales it down to model dimensions.
+  CGSize scaledSize = CGSizeMake(224, 224);
+  CVPixelBufferRef croppedPixelBuffer = [self cropImage:scaledSize pixelBuffer:pixelBuffer];
+  if (croppedPixelBuffer == nil) {
+    return nil;
+  }
+  
+  UIImage *croppedImage = [self imageFromPixelBuffer:croppedPixelBuffer];
+  
+  CVPixelBufferRelease(croppedPixelBuffer);
+  CVPixelBufferRelease(pixelBuffer);
+  
+  // Remove the alpha component from the image buffer to get the RGB data.
+  NSData *rgbData = [self rgbDataFromImage:[croppedImage CGImage]];
+  
+  uint8_t* in = (uint8_t *)[rgbData bytes];
+  
+  int input = _interpreter->inputs()[0];
+  TfLiteTensor *input_tensor = _interpreter->tensor(input);
+  
+  bool is_quantized;
+  switch (input_tensor->type) {
+    case kTfLiteFloat32:
+      is_quantized = false;
+      break;
+    case kTfLiteUInt8:
+      is_quantized = true;
+      break;
+    default:
+      NSLog(@"Input data type is not supported by this demo app.");
+      return NO;
+  }
+  
+  const int image_channels = 4;
+  if (image_channels < _wanted_input_channels) {
+    NSLog(@"Invalid image_channels");
+  }
+  if (is_quantized) {
+    uint8_t* out = _interpreter->typed_tensor<uint8_t>(input);
+    ProcessInputWithQuantizedModel(in, out, croppedImage.size.width, croppedImage.size.height, 4);
+  } else {
+    float* out = _interpreter->typed_tensor<float>(input);
+    ProcessInputWithFloatModel(in, out, croppedImage.size.width, croppedImage.size.height, 4);
+  }
+  
+  double start = [[NSDate new] timeIntervalSince1970];
+  if (_interpreter->Invoke() != kTfLiteOk) {
+    NSLog(@"Failed to invoke!");
+  }
+  double end = [[NSDate new] timeIntervalSince1970];
+  _total_latency += (end - start);
+  _total_count += 1;
+  NSLog(@"Time: %.4lf, avg: %.4lf, count: %d", end - start, _total_latency / _total_count,
+        _total_count);
+  
+  // read output size from the output sensor
+  const int output_tensor_index = _interpreter->outputs()[0];
+  TfLiteTensor* output_tensor = _interpreter->tensor(output_tensor_index);
+  TfLiteIntArray* output_dims = output_tensor->dims;
+  if (output_dims->size != 2 || output_dims->data[0] != 1) {
+    NSLog(@"Output of the model is in invalid format.");
+  }
+  const int output_size = output_dims->data[1];
+  
+  const int kNumResults = 5;
+  const float kThreshold = 0.1f;
+  
+  std::vector<std::pair<float, int> > top_results;
+  
+  if (is_quantized) {
+    uint8_t* quantized_output = _interpreter->typed_output_tensor<uint8_t>(0);
+    int32_t zero_point = input_tensor->params.zero_point;
+    float scale = input_tensor->params.scale;
+    float output[output_size];
+    for (int i = 0; i < output_size; ++i) {
+      output[i] = (quantized_output[i] - zero_point) * scale;
+    }
+    GetTopN(output, output_size, kNumResults, kThreshold, &top_results);
+  }
+  else {
+    float* output = _interpreter->typed_output_tensor<float>(0);
+    GetTopN(output, output_size, kNumResults, kThreshold, &top_results);
+  }
+  
+  NSMutableDictionary* newValues = [NSMutableDictionary dictionary];
+  for (const auto& result : top_results) {
+    const float confidence = result.first;
+    const int index = result.second;
+    NSString* labelObject = [NSString stringWithUTF8String:_labels[index].c_str()];
+    NSNumber* valueObject = [NSNumber numberWithFloat:confidence];
+    [newValues setObject:valueObject forKey:labelObject];
+  }
+  dispatch_async(dispatch_get_main_queue(), ^(void) {
+    [self setPredictionValues:newValues];
+  });
+  
+  return YES;
 }
 
 - (BOOL)runModelOnFrame:(CVPixelBufferRef)pixelBuffer {
@@ -377,37 +486,28 @@ void GetTopN(
   }
 }
 
-- (CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)image
-{
+- (CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)image {
+  
   CGSize frameSize = CGSizeMake(CGImageGetWidth(image), CGImageGetHeight(image));
-  NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
-                           [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
-                           nil];
+  NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey, [NSNumber numberWithBool:YES],kCVPixelBufferCGBitmapContextCompatibilityKey, nil];
   CVPixelBufferRef pxbuffer = NULL;
-  CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault, frameSize.width,
-                                        frameSize.height,  kCVPixelFormatType_32ARGB, (CFDictionaryRef) CFBridgingRetain(options),
+  
+  CVReturn status = CVPixelBufferCreate(
+                                        kCFAllocatorDefault, frameSize.width, frameSize.height,
+                                        kCVPixelFormatType_32BGRA, (__bridge CFDictionaryRef)options,
                                         &pxbuffer);
   NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
   
   CVPixelBufferLockBaseAddress(pxbuffer, 0);
   void *pxdata = CVPixelBufferGetBaseAddress(pxbuffer);
   
-  
   CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
-  
   CGContextRef context = CGBitmapContextCreate(
                                                pxdata, frameSize.width, frameSize.height,
                                                8, CVPixelBufferGetBytesPerRow(pxbuffer),
                                                rgbColorSpace,
                                                (CGBitmapInfo)kCGBitmapByteOrder32Little |
                                                kCGImageAlphaPremultipliedFirst);
-  
-  CGContextConcatCTM(context, CGAffineTransformMakeRotation(0));
-  CGAffineTransform flipVertical = CGAffineTransformMake( 1, 0, 0, -1, 0, CGImageGetHeight(image) );
-  CGContextConcatCTM(context, flipVertical);
-  CGAffineTransform flipHorizontal = CGAffineTransformMake( -1.0, 0.0, 0.0, 1.0, CGImageGetWidth(image), 0.0 );
-  CGContextConcatCTM(context, flipHorizontal);
   
   CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image),
                                          CGImageGetHeight(image)), image);
@@ -417,6 +517,115 @@ void GetTopN(
   CVPixelBufferUnlockBaseAddress(pxbuffer, 0);
   
   return pxbuffer;
+}
+
+- (UIImage *)imageFromPixelBuffer:(CVPixelBufferRef)pixelBuffer {
+  CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+  CIContext *context = [CIContext contextWithOptions:nil];
+  CGImageRef myImage = [context createCGImage:ciImage fromRect:CGRectMake(0, 0, CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer))];
+  UIImage *image = [UIImage imageWithCGImage:myImage];
+  
+  CGImageRelease(myImage);
+  
+  return image;
+}
+
+- (CVPixelBufferRef) cropImage:(CGSize)size pixelBuffer:(CVPixelBufferRef)pixelBuffer {
+  CGFloat imageWidth = CVPixelBufferGetWidth(pixelBuffer);
+  CGFloat imageHeight = CVPixelBufferGetHeight(pixelBuffer);
+  OSType pixelBufferType = CVPixelBufferGetPixelFormatType(pixelBuffer);
+  
+  size_t inputImageRowBytes = CVPixelBufferGetBytesPerRow(pixelBuffer);
+  size_t imageChannels = 4;
+  
+  size_t thumbnailSize = MIN(imageWidth, imageHeight);
+  CVPixelBufferLockBaseAddress(pixelBuffer, kNilOptions);
+  
+  int originX = 0;
+  int originY = 0;
+  
+  if (imageWidth > imageHeight) {
+    originX = (imageWidth - imageHeight) / 2;
+  }
+  else {
+    originY = (imageHeight - imageWidth) / 2;
+  }
+
+  unsigned char* inputBaseAddress = (unsigned char*)(CVPixelBufferGetBaseAddress(pixelBuffer));
+  inputBaseAddress += originY * inputImageRowBytes + originX * imageChannels;
+  
+  // Gets vImage Buffer from input image
+  vImage_Buffer inputVImageBuffer = {
+    .data = (void *)inputBaseAddress,
+    .height = thumbnailSize,
+    .width = thumbnailSize,
+    .rowBytes = inputImageRowBytes
+  };
+  
+  int thumbnailRowBytes = size.width * imageChannels;
+  unsigned char *thumbnailBytes = (unsigned char *)malloc(size.height * thumbnailRowBytes);
+  
+  // Allocates a vImage buffer for thumbnail image.
+  vImage_Buffer thumbnailVImageBuffer = {
+    .data = (void *)thumbnailBytes,
+    .height = (size_t)size.height,
+    .width = (size_t)size.width,
+    .rowBytes = (size_t)thumbnailRowBytes
+  };
+  
+  // Performs the scale operation on input image buffer and stores it in thumbnail image buffer.
+  vImage_Error scaleError = vImageScale_ARGB8888(&inputVImageBuffer, &thumbnailVImageBuffer, nil, vImage_Flags(0));
+  
+  CVPixelBufferUnlockBaseAddress(pixelBuffer, kNilOptions);
+  
+  if (scaleError != kvImageNoError) {
+    return nil;
+  }
+  
+  CVPixelBufferRef thumbnailPixelBuffer;
+  
+  // Converts the thumbnail vImage buffer to CVPixelBuffer
+  CVReturn conversionStatus = CVPixelBufferCreateWithBytes(nil, (size_t)size.width, (size_t)size.height, pixelBufferType, thumbnailBytes, thumbnailRowBytes, PixelBufferReleaseCallback, nil, nil, &thumbnailPixelBuffer);
+  
+  if (conversionStatus != kCVReturnSuccess) {
+    free(thumbnailBytes);
+    return nil;
+  }
+  
+  return thumbnailPixelBuffer;
+}
+
+- (NSData *) rgbDataFromImage:(CGImageRef)image {
+  NSMutableData *data = [[NSMutableData alloc] init];
+  CGContextRef context = CGBitmapContextCreate(nil, CGImageGetWidth(image), CGImageGetHeight(image), 8, CGImageGetWidth(image) * 4, CGColorSpaceCreateDeviceRGB(), kCGImageAlphaNoneSkipFirst);
+  
+  CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image),
+                                         CGImageGetHeight(image)), image);
+  
+  unsigned char *imageData = (unsigned char *)CGBitmapContextGetData(context);
+  for (int row = 0; row < 224; row++) {
+    for (int col = 0; col < 224; col++) {
+      long offset = 4 * (col * CGBitmapContextGetWidth(context) + row);
+      // (Ignore offset 0, the unused alpha channel)
+      int red = (int)imageData[offset+1];
+      int green = (int)imageData[offset+2];
+      int blue = (int)imageData[offset+3];
+
+      int normalizedRed = Float32(red) / 255.0;
+      int normalizedGreen = Float32(green) / 255.0;
+      int normalizedBlue = Float32(blue) / 255.0;
+      
+      uint32_t redI = htonl((uint32_t)normalizedRed);
+      [data appendBytes:&redI length:sizeof(redI)];
+      
+      uint32_t greenI = htonl((uint32_t)normalizedGreen);
+      [data appendBytes:&greenI length:sizeof(greenI)];
+      
+      uint32_t blueI = htonl((uint32_t)normalizedBlue);
+      [data appendBytes:&blueI length:sizeof(blueI)];
+    }
+  }
+  return data;
 }
 
 @end
