@@ -169,29 +169,29 @@ void GetTopN(
   return YES;
 }
 
-- (BOOL)runModelOnImage:(UIImage *)image {
+- (NSDictionary *)runModelOnImage:(UIImage *)image {
   CVPixelBufferRef pixelBuffer = [self pixelBufferFromCGImage:[image CGImage]];
   OSType sourcePixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
   if (sourcePixelFormat != kCVPixelFormatType_32ARGB &&
       sourcePixelFormat != kCVPixelFormatType_32BGRA) {
     NSLog(@"Invalid pixel buffer");
-    return NO;
+    return nil;
   }
   
   // Crops the image to the biggest square in the center and scales it down to model dimensions.
   CGSize scaledSize = CGSizeMake(224, 224);
-  CVPixelBufferRef croppedPixelBuffer = [self cropImage:scaledSize pixelBuffer:pixelBuffer];
-  if (croppedPixelBuffer == nil) {
+  CVPixelBufferRef thumbnailPixelBuffer = [self centerThumbnail:scaledSize pixelBuffer:pixelBuffer];
+  if (thumbnailPixelBuffer == nil) {
     return nil;
   }
   
-  UIImage *croppedImage = [self imageFromPixelBuffer:croppedPixelBuffer];
+  UIImage *thumbnailImage = [self imageFromPixelBuffer:thumbnailPixelBuffer];
   
-  CVPixelBufferRelease(croppedPixelBuffer);
+  CVPixelBufferRelease(thumbnailPixelBuffer);
   CVPixelBufferRelease(pixelBuffer);
   
   // Remove the alpha component from the image buffer to get the RGB data.
-  NSData *rgbData = [self rgbDataFromImage:[croppedImage CGImage]];
+  NSData *rgbData = [self rgbDataFromImage:[thumbnailImage CGImage]];
   
   uint8_t* in = (uint8_t *)[rgbData bytes];
   
@@ -208,7 +208,7 @@ void GetTopN(
       break;
     default:
       NSLog(@"Input data type is not supported by this demo app.");
-      return NO;
+      return nil;
   }
   
   const int image_channels = 4;
@@ -217,10 +217,10 @@ void GetTopN(
   }
   if (is_quantized) {
     uint8_t* out = _interpreter->typed_tensor<uint8_t>(input);
-    ProcessInputWithQuantizedModel(in, out, croppedImage.size.width, croppedImage.size.height, 4);
+    ProcessInputWithQuantizedModel(in, out, thumbnailImage.size.width, thumbnailImage.size.height, 4);
   } else {
     float* out = _interpreter->typed_tensor<float>(input);
-    ProcessInputWithFloatModel(in, out, croppedImage.size.width, croppedImage.size.height, 4);
+    ProcessInputWithFloatModel(in, out, thumbnailImage.size.width, thumbnailImage.size.height, 4);
   }
   
   double start = [[NSDate new] timeIntervalSince1970];
@@ -270,11 +270,11 @@ void GetTopN(
     NSNumber* valueObject = [NSNumber numberWithFloat:confidence];
     [newValues setObject:valueObject forKey:labelObject];
   }
-  dispatch_async(dispatch_get_main_queue(), ^(void) {
-    [self setPredictionValues:newValues];
-  });
+//  dispatch_async(dispatch_get_main_queue(), ^(void) {
+//    [self setPredictionValues:newValues];
+//  });
   
-  return YES;
+  return newValues;
 }
 
 - (BOOL)runModelOnFrame:(CVPixelBufferRef)pixelBuffer {
@@ -530,7 +530,7 @@ void GetTopN(
   return image;
 }
 
-- (CVPixelBufferRef) cropImage:(CGSize)size pixelBuffer:(CVPixelBufferRef)pixelBuffer {
+- (CVPixelBufferRef) centerThumbnail:(CGSize)size pixelBuffer:(CVPixelBufferRef)pixelBuffer {
   CGFloat imageWidth = CVPixelBufferGetWidth(pixelBuffer);
   CGFloat imageHeight = CVPixelBufferGetHeight(pixelBuffer);
   OSType pixelBufferType = CVPixelBufferGetPixelFormatType(pixelBuffer);
@@ -596,13 +596,13 @@ void GetTopN(
 }
 
 - (NSData *) rgbDataFromImage:(CGImageRef)image {
-  NSMutableData *data = [[NSMutableData alloc] init];
   CGContextRef context = CGBitmapContextCreate(nil, CGImageGetWidth(image), CGImageGetHeight(image), 8, CGImageGetWidth(image) * 4, CGColorSpaceCreateDeviceRGB(), kCGImageAlphaNoneSkipFirst);
   
   CGContextDrawImage(context, CGRectMake(0, 0, CGImageGetWidth(image),
                                          CGImageGetHeight(image)), image);
   
   unsigned char *imageData = (unsigned char *)CGBitmapContextGetData(context);
+  NSMutableArray *array = [[NSMutableArray alloc] init];
   for (int row = 0; row < 224; row++) {
     for (int col = 0; col < 224; col++) {
       long offset = 4 * (col * CGBitmapContextGetWidth(context) + row);
@@ -610,21 +610,27 @@ void GetTopN(
       int red = (int)imageData[offset+1];
       int green = (int)imageData[offset+2];
       int blue = (int)imageData[offset+3];
-
+      
+      // Normalize channel values to [0.0, 1.0]. This requirement varies
+      // by model. For example, some models might require values to be
+      // normalized to the range [-1.0, 1.0] instead, and others might
+      // require fixed-point values or the original bytes.
       int normalizedRed = Float32(red) / 255.0;
       int normalizedGreen = Float32(green) / 255.0;
       int normalizedBlue = Float32(blue) / 255.0;
       
-      uint32_t redI = htonl((uint32_t)normalizedRed);
-      [data appendBytes:&redI length:sizeof(redI)];
+      [array addObject:@(normalizedRed)];
+      [array addObject:@(normalizedGreen)];
+      [array addObject:@(normalizedBlue)];
       
-      uint32_t greenI = htonl((uint32_t)normalizedGreen);
-      [data appendBytes:&greenI length:sizeof(greenI)];
+      //            [array addObject:@(red)];
+      //            [array addObject:@(green)];
+      //            [array addObject:@(blue)];
       
-      uint32_t blueI = htonl((uint32_t)normalizedBlue);
-      [data appendBytes:&blueI length:sizeof(blueI)];
     }
   }
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:array];
+  
   return data;
 }
 

@@ -13,10 +13,10 @@
 
 @interface BSWDataModelHandler : NSObject
 
-+ (BSWDataModelHandler *) sharedInstance;
++ (BSWDataModelHandler *)sharedInstance;
 - (BOOL)loadModel:(NSString *)modelFileName modelFileExtn:(NSString *)modelFileExtn labels:(NSString *)labelFileName labelsFileExtn:(NSString *)labelFileExtn;
 - (BOOL)runModelOnFrame:(CVPixelBufferRef)pixelBuffer;
-- (BOOL)runModelOnImage:(UIImage *)image;
+- (NSDictionary *)runModelOnImage:(UIImage *)image;
 
 @end
 
