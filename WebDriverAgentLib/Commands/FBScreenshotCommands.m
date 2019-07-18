@@ -11,6 +11,7 @@
 #import "FBRoute.h"
 #import "FBRouteRequest.h"
 #import "XCUIDevice+FBHelpers.h"
+#import "BSWDataModelHandler.h"
 
 @implementation FBScreenshotCommands
 
@@ -26,6 +27,7 @@
     [[FBRoute GET:@"/screenshotHigh2/quality/:quality"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh2:)],
     [[FBRoute GET:@"/screenshotHigh2/type/:type"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh2:)],
     [[FBRoute GET:@"/screenshotHigh2/quality/:quality/type/:type"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotHigh2:)],
+    [[FBRoute GET:@"/screenClassification"].withoutSession respondWithTarget:self action:@selector(handleGetScreenshotClassification:)],
     [[FBRoute GET:@"/screenshot"] respondWithTarget:self action:@selector(handleGetScreenshot:)],
   ];
 }
@@ -73,6 +75,33 @@
   }
   NSString *screenshot = [screenshotData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
   return FBResponseWithObject(screenshot);
+}
+
++ (id<FBResponsePayload>)handleGetScreenshotClassification:(FBRouteRequest *)request
+{
+    NSError *error;
+    UIImage *image  = [[XCUIDevice sharedDevice] fb_screenshotImageWithError:&error];
+    if (nil == image) {
+        return FBResponseWithError(error);
+    }
+    NSDictionary *_values = [[BSWDataModelHandler sharedInstance] runModelOnImage:image];
+    NSMutableDictionary *values = [_values mutableCopy];
+    
+    double threshold = 0.501;
+    double loadingConfScore = ((NSNumber *)_values[@"loading"]).doubleValue;
+    double loadedConfScore = ((NSNumber *)_values[@"loaded"]).doubleValue;
+    
+    if (loadedConfScore > loadingConfScore && loadedConfScore > threshold) {
+        values[@"result"] = @"loaded";
+    }
+    else if (loadingConfScore > loadedConfScore && loadingConfScore > threshold) {
+        values[@"result"] = @"loading";
+    }
+    else {
+        values[@"result"] = @"UNKNOWN";
+    }
+    
+    return FBResponseWithObject(values);
 }
 
 @end
