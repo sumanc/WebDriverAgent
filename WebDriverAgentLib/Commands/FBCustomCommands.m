@@ -164,13 +164,11 @@
     [self tap:@"General" app:app];
     [self tap:@"Reset" app:app];
     [self tap:@"Reset Location & Privacy" app:app];
-    if ([self tap:@"Reset Location & Privacy" app:app]) {
-      if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ) {
-        [self tapButton:@"Reset" element:@"Reset Warnings" app:app];
-      }
-      else {
-        [self tap:@"Reset Warnings" app:app];
-      }
+    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ) {
+      [self tapButton:@"Reset" element:@"Reset Warnings" app:app];
+    }
+    else {
+      [self tap:@"Reset Warnings" app:app];
     }
   }
   return FBResponseWithOK();
