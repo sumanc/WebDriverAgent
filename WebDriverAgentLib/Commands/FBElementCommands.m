@@ -552,7 +552,6 @@
 + (id<FBResponsePayload>)handleTap:(FBRouteRequest *)request
 {
   CGPoint tapPoint = CGPointMake((CGFloat)[request.arguments[@"x"] doubleValue], (CGFloat)[request.arguments[@"y"] doubleValue]);
-  
   XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
   NSArray *alerts = [[app alerts] allElementsBoundByIndex];
   
@@ -568,8 +567,12 @@
     NSString *title = [texts[0] label];
     NSString *subtitle = texts.count > 1 ? [texts[1] label] : @"";
     NSArray *buttons = [[alert buttons] allElementsBoundByIndex];
+    CGPoint buttonTap = CGPointMake(tapPoint.x, tapPoint.y);
+    if (UIInterfaceOrientationIsLandscape(app.interfaceOrientation)) {
+      buttonTap = CGPointMake(tapPoint.y, tapPoint.x);
+    }
     for (XCUIElement *button in buttons) {
-      if (CGRectContainsPoint(button.frame, tapPoint)) {
+      if (CGRectContainsPoint(button.frame, buttonTap)) {
         NSString *label = [button label];
         NSLog(@"### TIVO DEBUG 2: found alert button to tap: %@", label);
         [button tap];
