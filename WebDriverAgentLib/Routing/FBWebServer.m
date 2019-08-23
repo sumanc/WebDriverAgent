@@ -47,6 +47,13 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
 @property (nonatomic, strong) FBExceptionHandler *exceptionHandler;
 @property (nonatomic, strong) RoutingHTTPServer *server;
 @property (atomic, assign) BOOL keepAlive;
+@property (nonatomic, strong) PSWebSocketServer *wsServer;
+@property (atomic, assign) NSInteger wsPort;
+@property (nonatomic, strong) PSWebSocket *wsSocket;
+@property (atomic, assign) NSInteger fps;
+@property (atomic, assign) NSInteger quality;
+@property (nonatomic, strong) NSTimer *scTimer;
+@property (nonatomic, strong) NSData *lastImageData;
 @end
 
 @implementation FBWebServer
@@ -110,9 +117,105 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
   }
   [FBLogger logFmt:@"%@http://%@:%d%@", FBServerURLBeginMarker, [XCUIDevice sharedDevice].fb_wifiIPAddress ?: @"localhost", [self.server port], FBServerURLEndMarker];
   
-  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"7.18.2019.1"];
+  _wsPort = [self.server port]+1;
+  
+  if (NSProcessInfo.processInfo.environment[@"USE_WS_PORT"] &&
+      [NSProcessInfo.processInfo.environment[@"USE_WS_PORT"] length] > 0) {
+    _wsPort = [NSProcessInfo.processInfo.environment[@"USE_WS_PORT"] integerValue];
+  }
+  
+  [self startWebSocketServer:[XCUIDevice sharedDevice].fb_wifiIPAddress ?: @"localhost" port:_wsPort];
+  
+  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"8.22.2019.1"];
   [self startTimedTask];
   [[BSWDataModelHandler sharedInstance] loadModel:@"model" modelFileExtn:@"tflite" labels:@"labels" labelsFileExtn:@"txt"];
+}
+
+- (void)startWebSocketServer:(NSString *)host port:(NSInteger)port {
+  _wsServer = [PSWebSocketServer serverWithHost:host port:port];
+  _wsServer.delegate = self;
+  [_wsServer start];
+}
+
+- (void)startScreenCast:(NSTimer*)timer {
+  //  dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+  NSError *error = nil;
+  NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:_quality type:@"jpeg"];
+  if (screenshotData != nil && error == nil) {
+    if ([_lastImageData isEqualToData:screenshotData]) {
+      return;
+    }
+    _lastImageData = screenshotData;
+    [_wsSocket send:screenshotData];
+  }
+  else {
+    NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
+  }
+  //  });
+}
+
+- (void)stopScreenCast {
+  if (_scTimer != nil) {
+    [_scTimer invalidate];
+    _scTimer = nil;
+  }
+  if (_wsSocket != nil) {
+    [_wsSocket close];
+  }
+  _lastImageData = nil;
+}
+
+
+#pragma mark - PSWebSocketServerDelegate
+
+- (void)serverDidStart:(PSWebSocketServer *)server {
+  [FBLogger logFmt:@"%@ws://%@:%ld", @"WebSocket Server started and listening on ", [XCUIDevice sharedDevice].fb_wifiIPAddress ?: @"localhost", _wsPort];
+}
+
+- (void)serverDidStop:(PSWebSocketServer *)server {
+  NSLog(@"Server did stop…");
+}
+
+- (BOOL)server:(PSWebSocketServer *)server acceptWebSocketWithRequest:(NSURLRequest *)request {
+  NSLog(@"Server should accept request: %@", request);
+  return YES;
+}
+
+- (void)server:(PSWebSocketServer *)server webSocket:(PSWebSocket *)webSocket didReceiveMessage:(id)message {
+  NSLog(@"Server websocket did receive message: %@", message);
+  _wsSocket = webSocket;
+  NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+  NSError *error;
+  NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+  if (error) {
+    NSLog(@"Invalid message to web socket: %@", error);
+    return;
+  }
+  
+  NSString *cmd = [dict objectForKey:@"cmd"];
+  if ([cmd caseInsensitiveCompare:@"screenCast"] == NSOrderedSame) {
+    _fps = [[dict objectForKey:@"fps"] integerValue];
+    if (_fps <= 0) {
+      _fps = 5;
+    }
+    _quality = [[dict objectForKey:@"quality"] integerValue];
+    _scTimer = [NSTimer scheduledTimerWithTimeInterval:1/_fps target:self selector:@selector(startScreenCast:) userInfo:nil repeats:YES];
+  }
+  else if ([cmd caseInsensitiveCompare:@"stopScreenCast"] == NSOrderedSame) {
+    [self stopScreenCast];
+  }
+}
+
+- (void)server:(PSWebSocketServer *)server webSocketDidOpen:(PSWebSocket *)webSocket {
+  NSLog(@"Server websocket did open");
+}
+
+- (void)server:(PSWebSocketServer *)server webSocket:(PSWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+  NSLog(@"Server websocket did close with code: %@, reason: %@, wasClean: %@", @(code), reason, @(wasClean));
+}
+
+- (void)server:(PSWebSocketServer *)server webSocket:(PSWebSocket *)webSocket didFailWithError:(NSError *)error {
+  NSLog(@"Server websocket did fail with error: %@", error);
 }
 
 - (void)startTimedTask {

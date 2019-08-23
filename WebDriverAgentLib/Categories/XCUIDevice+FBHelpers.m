@@ -96,24 +96,24 @@ static const NSTimeInterval FBHomeButtonCoolOffTime = 1.;
 
 - (NSData *)fb_screenshotHighWithError:(NSError*__autoreleasing*)error quality:(double)quality type:(NSString *)type
 {
-  Class xcScreenClass = objc_lookUpClass("XCUIScreen");
-  if (nil == xcScreenClass) {
-    NSData *result = [[XCAXClient_iOS sharedClient] screenshotData];
-    if (nil == result) {
-      if (error) {
-        *error = [[FBErrorBuilder.builder withDescription:@"Cannot take a screenshot of the current screen state"] build];
-      }
-      return nil;
-    }
-    return result;
-  }
+//  Class xcScreenClass = objc_lookUpClass("XCUIScreen");
+//  if (nil == xcScreenClass) {
+//    NSData *result = [[XCAXClient_iOS sharedClient] screenshotData];
+//    if (nil == result) {
+//      if (error) {
+//        *error = [[FBErrorBuilder.builder withDescription:@"Cannot take a screenshot of the current screen state"] build];
+//      }
+//      return nil;
+//    }
+//    return result;
+//  }
   
 //  XCUIApplication *app = FBApplication.fb_activeApplication;
 //  CGSize screenSize = FBAdjustDimensionsForApplication(app.frame.size, app.interfaceOrientation);
 //  NSUInteger quality = 0;
 //  CGRect screenRect = CGRectMake(0, 0, screenSize.width, screenSize.height);
 //
-  XCUIScreen *mainScreen = (XCUIScreen *)[xcScreenClass mainScreen];
+  XCUIScreen *mainScreen = [XCUIScreen mainScreen];
 //  return [mainScreen screenshotDataForQuality:quality rect:screenRect error:error];
   
   NSData *result = nil;

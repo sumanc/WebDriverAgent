@@ -8,6 +8,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "PSWebSocketServer.h"
 
 @class RouteResponse, RoutingHTTPServer, FBExceptionHandler;
 @protocol FBWebServerDelegate;
@@ -17,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  HTTP and USB service wrapper, handling requests and responses
  */
-@interface FBWebServer : NSObject
+@interface FBWebServer : NSObject <PSWebSocketServerDelegate>
 
 /**
  Server delegate.

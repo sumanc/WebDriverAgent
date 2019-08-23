@@ -24,6 +24,10 @@
 		258E79BC21BD84280074C025 /* FBAlertsMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 258E79BA21BD84280074C025 /* FBAlertsMonitor.m */; };
 		258E79BF21BD85CD0074C025 /* XCUIApplication+FBAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 258E79BD21BD85CC0074C025 /* XCUIApplication+FBAlert.m */; };
 		258E79C021BD85CD0074C025 /* XCUIApplication+FBAlert.h in Headers */ = {isa = PBXBuildFile; fileRef = 258E79BE21BD85CC0074C025 /* XCUIApplication+FBAlert.h */; };
+		25B84923230EF5F200A66286 /* PocketSocket in Resources */ = {isa = PBXBuildFile; fileRef = 25B84922230EF5F100A66286 /* PocketSocket */; };
+		25B84925230EF94200A66286 /* libPocketSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 25B84924230EF94200A66286 /* libPocketSocket.a */; };
+		25B84927230EF94E00A66286 /* libPocketSocketSim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 25B84926230EF94E00A66286 /* libPocketSocketSim.a */; };
+		25B84929230EF96A00A66286 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 25B84928230EF96A00A66286 /* libz.tbd */; };
 		711084441DA3AA7500F913D6 /* FBXPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 711084421DA3AA7500F913D6 /* FBXPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		711084451DA3AA7500F913D6 /* FBXPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 711084431DA3AA7500F913D6 /* FBXPath.m */; };
 		7119E1EC1E891F8600D0B125 /* FBPickerWheelSelectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7119E1EB1E891F8600D0B125 /* FBPickerWheelSelectTests.m */; };
@@ -445,6 +449,10 @@
 		258E79BA21BD84280074C025 /* FBAlertsMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBAlertsMonitor.m; sourceTree = "<group>"; };
 		258E79BD21BD85CC0074C025 /* XCUIApplication+FBAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCUIApplication+FBAlert.m"; sourceTree = "<group>"; };
 		258E79BE21BD85CC0074C025 /* XCUIApplication+FBAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCUIApplication+FBAlert.h"; sourceTree = "<group>"; };
+		25B84922230EF5F100A66286 /* PocketSocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PocketSocket; sourceTree = "<group>"; };
+		25B84924230EF94200A66286 /* libPocketSocket.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPocketSocket.a; path = PocketSocket/libPocketSocket.a; sourceTree = "<group>"; };
+		25B84926230EF94E00A66286 /* libPocketSocketSim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPocketSocketSim.a; path = PocketSocket/libPocketSocketSim.a; sourceTree = "<group>"; };
+		25B84928230EF96A00A66286 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		44757A831D42CE8300ECF35E /* XCUIDeviceRotationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XCUIDeviceRotationTests.m; sourceTree = "<group>"; };
 		711084421DA3AA7500F913D6 /* FBXPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBXPath.h; sourceTree = "<group>"; };
 		711084431DA3AA7500F913D6 /* FBXPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBXPath.m; sourceTree = "<group>"; };
@@ -783,6 +791,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				25B84929230EF96A00A66286 /* libz.tbd in Frameworks */,
 				257B1C4A22C68FB2005D96EC /* Accelerate.framework in Frameworks */,
 				257B1C3B22C686DD005D96EC /* tensorflow_lite.framework in Frameworks */,
 				7174AF041D9D39AF008C8AD5 /* libxml2.tbd in Frameworks */,
@@ -791,6 +800,8 @@
 				EEEA70152110605600C8ADE2 /* XCTAutomationSupport.framework in Frameworks */,
 				2543B7F022B2F7A4008DC421 /* libSocketRocket.a in Frameworks */,
 				2543B7C422B2EAC9008DC421 /* libSocketRocketSim.a in Frameworks */,
+				25B84927230EF94E00A66286 /* libPocketSocketSim.a in Frameworks */,
+				25B84925230EF94200A66286 /* libPocketSocket.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -872,6 +883,7 @@
 			children = (
 				257B1C6422C6A163005D96EC /* labels.txt */,
 				257B1C6522C6A164005D96EC /* model.tflite */,
+				25B84922230EF5F100A66286 /* PocketSocket */,
 				2543B7C822B2F4DB008DC421 /* SocketRocket */,
 				EEE5CABE1C80361500CBBDD9 /* Configurations */,
 				91F9DB731B99DDD8001349B2 /* PrivateHeaders */,
@@ -942,6 +954,8 @@
 		B6E83A410C45944B036B6B0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				25B84928230EF96A00A66286 /* libz.tbd */,
+				25B84924230EF94200A66286 /* libPocketSocket.a */,
 				257B1C4922C68FB2005D96EC /* Accelerate.framework */,
 				257B1C3A22C686DD005D96EC /* tensorflow_lite.framework */,
 				EE8980D321105B49001789EE /* XCTest.framework */,
@@ -950,6 +964,7 @@
 				AD35D0671CF1C2DA00870A75 /* iOS */,
 				2543B7C322B2EAC9008DC421 /* libSocketRocketSim.a */,
 				2543B7EF22B2F7A4008DC421 /* libSocketRocket.a */,
+				25B84926230EF94E00A66286 /* libPocketSocketSim.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1791,6 +1806,7 @@
 				EE2EAAA21CC6693900A3AB19 /* WebDriverAgent.bundle in Resources */,
 				2543B7C922B2F4DB008DC421 /* SocketRocket in Resources */,
 				257B1C6622C6A165005D96EC /* labels.txt in Resources */,
+				25B84923230EF5F200A66286 /* PocketSocket in Resources */,
 				257B1C6722C6A165005D96EC /* model.tflite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2214,6 +2230,7 @@
 					"$(SRCROOT)/Modules",
 					"\"$(SRCROOT)/SocketRocket/include\"",
 					"\"$(SRCROOT)/WebDriverAgentLib/Frameworks/tensorflow_lite.framework/Headers\"",
+					"\"$(SRCROOT)/PocketSocket/include\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentLib/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -2224,6 +2241,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/SocketRocket",
 					"$(PROJECT_DIR)/Tensorflow",
+					"$(PROJECT_DIR)/PocketSocket",
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -2270,6 +2288,7 @@
 					"$(SRCROOT)/Modules",
 					"\"$(SRCROOT)/SocketRocket/include\"",
 					"\"$(SRCROOT)/WebDriverAgentLib/Frameworks/tensorflow_lite.framework/Headers\"",
+					"\"$(SRCROOT)/PocketSocket/include\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentLib/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -2280,6 +2299,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/SocketRocket",
 					"$(PROJECT_DIR)/Tensorflow",
+					"$(PROJECT_DIR)/PocketSocket",
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -2452,6 +2472,11 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)",
 				);
+				HEADER_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/include/libxml2",
+					"$(SRCROOT)/Modules",
+					"\"$(SRCROOT)/PocketSocket/include\"",
+				);
 				INFOPLIST_FILE = WebDriverAgentRunner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -2481,6 +2506,11 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/include/libxml2",
+					"$(SRCROOT)/Modules",
+					"\"$(SRCROOT)/PocketSocket/include\"",
 				);
 				INFOPLIST_FILE = WebDriverAgentRunner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
