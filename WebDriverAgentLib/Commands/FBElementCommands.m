@@ -487,6 +487,12 @@
     velocity = 1500;
   }
   
+  [self drag2:startPoint endPoint:endPoint duration:duration velocity:velocity];
+  return FBResponseWithOK();
+}
+
++ (void)drag2:(CGPoint)startPoint endPoint:(CGPoint)endPoint duration:(double)duration velocity:(double)velocity {
+  XCUIApplication *app = [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
   NSObject *lock = [NSObject new];
   __block BOOL isHandlerCalled = NO;
   
@@ -509,7 +515,6 @@
     //Keep the run loop running, so this thread isn't blocked.
     [[NSRunLoop currentRunLoop] runUntilDate: [NSDate dateWithTimeIntervalSinceNow:1]];
   }
-  return FBResponseWithOK();
 }
 
 + (id<FBResponsePayload>)handleDrag:(FBRouteRequest *)request
@@ -655,10 +660,14 @@
     }
   }
   
-  XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
-  [tapCoordinate tap];
+  [self tapCoordinate:application tapPoint:tapPoint];
   
   return FBResponseWithOK();
+}
+
++ (void)tapCoordinate:(FBApplication *)application tapPoint:(CGPoint)tapPoint {
+  XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+  [tapCoordinate tap];
 }
 
 + (id<FBResponsePayload>)handleTap2:(FBRouteRequest *)request
@@ -743,17 +752,8 @@
   NSString *type = request.arguments[@"type"];
   NSString *query = request.arguments[@"query"];
   NSString *queryValue = request.arguments[@"queryValue"];
-  if (type == nil) {
-      return FBResponseWithErrorFormat(@"type is missing");
-  }
-  
-  XCUIElementType elementType = [self elementTypeFromName:type];
-  if (elementType == (XCUIElementType)-1) {
-    return FBResponseWithErrorFormat(@"Type %@ is invalid", type);
-  }
-
   FBApplication *application = request.session.application ?: [FBApplication fb_activeApplication];
-
+  
   NSArray *alerts = [[application alerts] allElementsBoundByIndex];
   if (alerts.count > 0 && queryValue != nil) {
     XCUIElement *alert = alerts[0];
@@ -765,58 +765,77 @@
       }
     }
   }
+  
+  return [self findAndTap:application type:type query:query queryValue:queryValue];
+}
 
-//  if (elementType != XCUIElementTypeOther) {
-//    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
++ (id<FBResponsePayload>)findAndTap:(FBApplication *)application type:(NSString *)type query:(NSString *)query queryValue:(NSString *)queryValue {
+  if (type == nil) {
+    return FBResponseWithErrorFormat(@"type is missing");
+  }
+  
+  XCUIElementType elementType = [self elementTypeFromName:type];
+  if (elementType == (XCUIElementType)-1) {
+    return FBResponseWithErrorFormat(@"Type %@ is invalid", type);
+  }
+  
+  //  if (elementType != XCUIElementTypeOther) {
+  //    NSArray <XCUIElement *> *children = [application descendantsMatchingType:elementType].allElementsBoundByIndex;
+  
+  NSString *matchString = [NSString stringWithFormat: @".*\\b%@.*", queryValue];
+  NSString *predicateString = [NSString stringWithFormat:@"%@ MATCHES[c] %%@", query];
+  
+  NSPredicate *predicate = [NSPredicate predicateWithFormat: predicateString, matchString];
+  XCUIElement *element = [[application descendantsMatchingType:elementType] elementMatchingPredicate:predicate];
+  if ([element exists]) {
+    //      NSString *wdname = element.wdName;
+    //      NSString *wdvalue = element.wdValue;
+    //      id evalue = element.value;
+    //      NSLog(@"%@, %@, %@", wdname, wdvalue, evalue);
     
-    NSString *matchString = [NSString stringWithFormat: @".*\\b%@.*", queryValue];
-    NSString *predicateString = [NSString stringWithFormat:@"%@ MATCHES[c] %%@", query];
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat: predicateString, matchString];
-    XCUIElement *element = [[application descendantsMatchingType:elementType] elementMatchingPredicate:predicate];
-    if ([element exists]) {
-//      NSString *wdname = element.wdName;
-//      NSString *wdvalue = element.wdValue;
-//      id evalue = element.value;
-//      NSLog(@"%@, %@, %@", wdname, wdvalue, evalue);
+    if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame) {
+      [element tap];
+    }
+    else {
       NSDictionary *rect = [element wdRect];
       CGFloat x = [[rect objectForKey:@"x"] floatValue];
       CGFloat y = [[rect objectForKey:@"y"] floatValue];
       //        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
       //        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
       CGPoint tapPoint = CGPointMake(x + 2, y + 2); //(x + (width + x)/2, y + (height + y)/2);
-      XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+      XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
       [tapCoordinate tap];
-      return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-//    }
-//    for (XCUIElement *child in children) {
-//      BOOL compare = NO;
-//      if (label != nil) {
-//        compare = [label caseInsensitiveCompare:child.label] == NSOrderedSame;
-//      }
-//      else if (name != nil) {
-//        compare = [name caseInsensitiveCompare:child.wdName] == NSOrderedSame;
-//      }
-//      else if (value != nil) {
-//        NSString *childValue = child.wdValue;
-//        compare = [value caseInsensitiveCompare:childValue] == NSOrderedSame;
-//      }
-//      if (compare) {
-//        NSDictionary *rect = [child wdRect];
-//        CGFloat x = [[rect objectForKey:@"x"] doubleValue];
-//        CGFloat y = [[rect objectForKey:@"y"] doubleValue];
-////        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
-////        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
-//        CGPoint tapPoint = CGPointMake(x, y); //(x + (width + x)/2, y + (height + y)/2);
-//        XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
-//        [tapCoordinate tap];
-//        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-////        NSError *error;
-////        if ([child fb_tapCoordinate:tapPoint error:&error]) {
-////          return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
-////        }
-//      }
-//    }
+    }
+    return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+    //    }
+    //    for (XCUIElement *child in children) {
+    //      BOOL compare = NO;
+    //      if (label != nil) {
+    //        compare = [label caseInsensitiveCompare:child.label] == NSOrderedSame;
+    //      }
+    //      else if (name != nil) {
+    //        compare = [name caseInsensitiveCompare:child.wdName] == NSOrderedSame;
+    //      }
+    //      else if (value != nil) {
+    //        NSString *childValue = child.wdValue;
+    //        compare = [value caseInsensitiveCompare:childValue] == NSOrderedSame;
+    //      }
+    //      if (compare) {
+    //        NSDictionary *rect = [child wdRect];
+    //        CGFloat x = [[rect objectForKey:@"x"] doubleValue];
+    //        CGFloat y = [[rect objectForKey:@"y"] doubleValue];
+    ////        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
+    ////        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
+    //        CGPoint tapPoint = CGPointMake(x, y); //(x + (width + x)/2, y + (height + y)/2);
+    //        XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+    //        [tapCoordinate tap];
+    //        return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+    ////        NSError *error;
+    ////        if ([child fb_tapCoordinate:tapPoint error:&error]) {
+    ////          return FBResponseWithStatus(FBCommandStatusNoError, @{@"tapTime" : @([[NSDate date] timeIntervalSince1970])});
+    ////        }
+    //      }
+    //    }
   }
   return FBResponseWithErrorFormat(@"Not found");
 }

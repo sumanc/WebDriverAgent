@@ -126,7 +126,7 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
   
   [self startWebSocketServer:[XCUIDevice sharedDevice].fb_wifiIPAddress ?: @"localhost" port:_wsPort];
   
-  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"8.22.2019.1"];
+  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"9.19.2019.1"];
   [self startTimedTask];
   [[BSWDataModelHandler sharedInstance] loadModel:@"model" modelFileExtn:@"tflite" labels:@"labels" labelsFileExtn:@"txt"];
 }
@@ -138,20 +138,20 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
 }
 
 - (void)startScreenCast:(NSTimer*)timer {
-  //  dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-  NSError *error = nil;
-  NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:_quality type:@"jpeg"];
-  if (screenshotData != nil && error == nil) {
-    if ([_lastImageData isEqualToData:screenshotData]) {
-      return;
+  dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+    NSError *error = nil;
+    NSData *screenshotData = [[XCUIDevice sharedDevice] fb_screenshotHighWithError:&error quality:_quality type:@"jpeg"];
+    if (screenshotData != nil && error == nil) {
+      if ([_lastImageData isEqualToData:screenshotData]) {
+        return;
+      }
+      _lastImageData = screenshotData;
+      [_wsSocket send:screenshotData];
     }
-    _lastImageData = screenshotData;
-    [_wsSocket send:screenshotData];
-  }
-  else {
-    NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
-  }
-  //  });
+    else {
+      NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
+    }
+  });
 }
 
 - (void)stopScreenCast {
@@ -164,7 +164,6 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
   }
   _lastImageData = nil;
 }
-
 
 #pragma mark - PSWebSocketServerDelegate
 

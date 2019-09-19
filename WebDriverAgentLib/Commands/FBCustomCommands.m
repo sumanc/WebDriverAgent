@@ -29,6 +29,7 @@
 #import "XCUIElement+FBIsVisible.h"
 #import "XCUIElementQuery.h"
 #import "SocketRocket.h"
+#import "FBElementCommands.h"
 
 @implementation FBCustomCommands
 
@@ -48,6 +49,8 @@
     [[FBRoute POST:@"/wda/resetLocation"].withoutSession respondWithTarget:self action:@selector(handleResetLocationCommand:)],
     [[FBRoute POST:@"/screenCast"].withoutSession respondWithTarget:self action:@selector(handleScreenCast:)],
     [[FBRoute POST:@"/stopScreenCast"].withoutSession respondWithTarget:self action:@selector(handleStopScreenCast:)],
+    [[FBRoute POST:@"/screenMirror"].withoutSession respondWithTarget:self action:@selector(handleScreenMirror:)],
+    [[FBRoute POST:@"/stopScreenMirror"].withoutSession respondWithTarget:self action:@selector(handleStopScreenMirror:)],
   ];
 }
 
@@ -262,6 +265,43 @@ static NSData *kLastImageData;
       NSLog(@"Error taking screenshot: %@", error == nil ? @"Unknown error" : error);
     }
 //  });
+}
+
++ (id<FBResponsePayload>)handleScreenMirror:(FBRouteRequest *)request
+{
+  NSString *airplayServer = request.arguments[@"airplay"];
+  if (airplayServer == nil) {
+    airplayServer = @"MesmAir";
+  }
+  
+  XCUIApplication *app =  [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
+  CGRect frame = app.frame;
+  
+  [FBElementCommands drag2:CGPointMake(frame.size.width, 0) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  id<FBResponsePayload> response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring"];
+  response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"StaticText" query:@"label" queryValue:airplayServer];
+  [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
+  [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
+  
+  return response;
+}
+
++ (id<FBResponsePayload>)handleStopScreenMirror:(FBRouteRequest *)request
+{
+  NSString *airplayServer = request.arguments[@"airplay"];
+  if (airplayServer == nil) {
+    airplayServer = @"MesmAir";
+  }
+  
+  XCUIApplication *app =  [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
+  CGRect frame = app.frame;
+  
+  [FBElementCommands drag2:CGPointMake(frame.size.width, 0) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  id<FBResponsePayload> response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:airplayServer];
+  response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Stop Mirroring"];
+  [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
+  
+  return response;
 }
 
 @end
