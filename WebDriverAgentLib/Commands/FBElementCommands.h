@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FBElementCommands : NSObject <FBCommandHandler>
 + (void)drag2:(CGPoint)startPoint endPoint:(CGPoint)endPoint duration:(double)duration velocity:(double)velocity;
-+ (id<FBResponsePayload>)findAndTap:(FBApplication *)application type:(NSString *)type query:(NSString *)query queryValue:(NSString *)queryValue;
++ (id<FBResponsePayload>)findAndTap:(FBApplication *)application type:(NSString *)type query:(NSString *)query queryValue:(NSString *)queryValue useButtonTap:(BOOL)useButtonTap;
 + (void)tapCoordinate:(FBApplication *)application tapPoint:(CGPoint)tapPoint;
 @end
 

@@ -766,10 +766,10 @@
     }
   }
   
-  return [self findAndTap:application type:type query:query queryValue:queryValue];
+  return [self findAndTap:application type:type query:query queryValue:queryValue useButtonTap:NO];
 }
 
-+ (id<FBResponsePayload>)findAndTap:(FBApplication *)application type:(NSString *)type query:(NSString *)query queryValue:(NSString *)queryValue {
++ (id<FBResponsePayload>)findAndTap:(FBApplication *)application type:(NSString *)type query:(NSString *)query queryValue:(NSString *)queryValue useButtonTap:(BOOL)useButtonTap {
   if (type == nil) {
     return FBResponseWithErrorFormat(@"type is missing");
   }
@@ -793,7 +793,7 @@
     //      id evalue = element.value;
     //      NSLog(@"%@, %@, %@", wdname, wdvalue, evalue);
     
-    if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame) {
+    if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame && useButtonTap) {
       [element tap];
     }
     else {

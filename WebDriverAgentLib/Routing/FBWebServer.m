@@ -126,7 +126,7 @@ static NSString *const FBServerURLEndMarker = @"<-ServerURLHere";
   
   [self startWebSocketServer:[XCUIDevice sharedDevice].fb_wifiIPAddress ?: @"localhost" port:_wsPort];
   
-  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"9.19.2019.1"];
+  [FBLogger logFmt:@"Mesmer WDA Version: %@", @"9.19.2019.2"];
   [self startTimedTask];
   [[BSWDataModelHandler sharedInstance] loadModel:@"model" modelFileExtn:@"tflite" labels:@"labels" labelsFileExtn:@"txt"];
 }
