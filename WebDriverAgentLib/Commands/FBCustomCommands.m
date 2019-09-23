@@ -9,6 +9,8 @@
 
 #import "FBCustomCommands.h"
 
+#import <sys/utsname.h>
+
 #import <XCTest/XCUIDevice.h>
 
 #import "FBApplication.h"
@@ -267,6 +269,33 @@ static NSData *kLastImageData;
 //  });
 }
 
++ (BOOL)isSwipeFromTopRight {
+  struct utsname systemInfo;
+  uname(&systemInfo);
+
+  NSString *deviceName =  [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+  if ([deviceName caseInsensitiveCompare:@"iPhone10,3"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone10,6"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone11,2"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone11,4"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone11,6"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone11,8"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone12,1"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone12,3"] == NSOrderedSame ||
+      [deviceName caseInsensitiveCompare:@"iPhone12,5"] == NSOrderedSame
+      ) {
+    return YES;
+  }
+  
+  if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+    NSString *systemVersion = [[[UIDevice currentDevice] systemVersion] substringToIndex:2];
+    if ([systemVersion integerValue] >= 12) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
 + (id<FBResponsePayload>)handleScreenMirror:(FBRouteRequest *)request
 {
   NSString *airplayServer = request.arguments[@"airplay"];
@@ -277,7 +306,16 @@ static NSData *kLastImageData;
   XCUIApplication *app =  [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
   CGRect frame = app.frame;
   
-  [FBElementCommands drag2:CGPointMake(frame.size.width, 0) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+//  FBApplication *application = [FBApplication fb_activeApplication];
+//  CGRect frame = application.wdFrame;
+//  CGRect frame = [[UIScreen mainScreen] bounds];
+  if ([self isSwipeFromTopRight]) {
+    [FBElementCommands drag2:CGPointMake(frame.size.width, 0) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  }
+  else {
+    //before iPhone X
+    [FBElementCommands drag2:CGPointMake(frame.size.width/2, frame.size.height) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  }
   id<FBResponsePayload> response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
   response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"StaticText" query:@"label" queryValue:airplayServer useButtonTap:YES];
   [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
@@ -296,7 +334,13 @@ static NSData *kLastImageData;
   XCUIApplication *app =  [[XCUIApplication alloc] initWithBundleIdentifier: @"com.apple.springboard"];
   CGRect frame = app.frame;
   
-  [FBElementCommands drag2:CGPointMake(frame.size.width, 0) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  if ([self isSwipeFromTopRight]) {
+    [FBElementCommands drag2:CGPointMake(frame.size.width, 0) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  }
+  else {
+    //before iPhone X
+    [FBElementCommands drag2:CGPointMake(frame.size.width/2, frame.size.height) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
+  }
   id<FBResponsePayload> response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:airplayServer useButtonTap:YES];
   response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Stop Mirroring" useButtonTap:YES];
   [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
