@@ -287,8 +287,15 @@ static NSData *kLastImageData;
     return YES;
   }
   
+  // simulators
+  NSString *systemVersion = [[[UIDevice currentDevice] systemVersion] substringToIndex:2];
+  if ([deviceName caseInsensitiveCompare:@"x86_64"] == NSOrderedSame &&
+      [systemVersion integerValue] >= 12) {
+    return YES;
+  }
+  
+  // iPads
   if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-    NSString *systemVersion = [[[UIDevice currentDevice] systemVersion] substringToIndex:2];
     if ([systemVersion integerValue] >= 12) {
       return YES;
     }
@@ -316,7 +323,18 @@ static NSData *kLastImageData;
     //before iPhone X
     [FBElementCommands drag2:CGPointMake(frame.size.width/2, frame.size.height) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
   }
-  id<FBResponsePayload> response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
+  FBResponseJSONPayload *response = (FBResponseJSONPayload*)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
+  
+  if ([[[response dictionary] objectForKey:@"status"] integerValue] != 0) {
+    // try a couple more times with a small delay
+    [NSThread sleepForTimeInterval:1.0f];
+    response = (FBResponseJSONPayload*)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
+    if ([[[response dictionary] objectForKey:@"status"] integerValue] != 0) {
+       // try a couple more times with a small delay
+       [NSThread sleepForTimeInterval:2.0f];
+       response = (FBResponseJSONPayload*)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
+    }
+  }
   response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"StaticText" query:@"label" queryValue:airplayServer useButtonTap:YES];
   [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
   [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
