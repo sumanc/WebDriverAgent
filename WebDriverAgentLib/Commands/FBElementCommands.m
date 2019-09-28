@@ -793,16 +793,16 @@
     //      id evalue = element.value;
     //      NSLog(@"%@, %@, %@", wdname, wdvalue, evalue);
     
-    if ([type caseInsensitiveCompare:@"button"] == NSOrderedSame && useButtonTap) {
+    if (/*[type caseInsensitiveCompare:@"button"] == NSOrderedSame &&*/ useButtonTap) {
       [element tap];
     }
     else {
       NSDictionary *rect = [element wdRect];
       CGFloat x = [[rect objectForKey:@"x"] floatValue];
       CGFloat y = [[rect objectForKey:@"y"] floatValue];
-      //        CGFloat width = [[rect objectForKey:@"width"] doubleValue];
-      //        CGFloat height = [[rect objectForKey:@"height"] doubleValue];
-      CGPoint tapPoint = CGPointMake(x + 2, y + 2); //(x + (width + x)/2, y + (height + y)/2);
+      CGFloat width = [[rect objectForKey:@"width"] doubleValue];
+      CGFloat height = [[rect objectForKey:@"height"] doubleValue];
+      CGPoint tapPoint = CGPointMake(x + width/2, y + height/2);
       XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
       [tapCoordinate tap];
     }

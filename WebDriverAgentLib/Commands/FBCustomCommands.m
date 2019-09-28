@@ -323,19 +323,25 @@ static NSData *kLastImageData;
     //before iPhone X
     [FBElementCommands drag2:CGPointMake(frame.size.width/2, frame.size.height) endPoint:CGPointMake(frame.size.width/2, frame.size.height/4) duration:0.001 velocity:1500];
   }
-  FBResponseJSONPayload *response = (FBResponseJSONPayload*)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
   
-  if ([[[response dictionary] objectForKey:@"status"] integerValue] != 0) {
-    // try a couple more times with a small delay
-    [NSThread sleepForTimeInterval:1.0f];
-    response = (FBResponseJSONPayload*)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
-    if ([[[response dictionary] objectForKey:@"status"] integerValue] != 0) {
-       // try a couple more times with a small delay
-       [NSThread sleepForTimeInterval:2.0f];
-       response = (FBResponseJSONPayload*)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
+  FBResponseJSONPayload *response = nil;
+  
+  for (int i = 0; i < 3; i++) {
+    [NSThread sleepForTimeInterval:(i * 1.0f)];
+    response = (FBResponseJSONPayload* _Nullable)[FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"Button" query:@"label" queryValue:@"Screen Mirroring" useButtonTap:YES];
+    if ([[[response dictionary] objectForKey:@"status"] integerValue] == 0) {
+      break;
     }
   }
-  response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"StaticText" query:@"label" queryValue:airplayServer useButtonTap:YES];
+  
+  for (int i = 0; i < 3; i++) {
+    [NSThread sleepForTimeInterval:(i * 1.0f)];
+    response = [FBElementCommands findAndTap:[FBApplication fb_activeApplication] type:@"StaticText" query:@"label" queryValue:airplayServer useButtonTap:YES];
+    if ([[[response dictionary] objectForKey:@"status"] integerValue] == 0) {
+      break;
+    }
+  }
+  
   [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
   [FBElementCommands tapCoordinate:[FBApplication fb_activeApplication] tapPoint:CGPointMake(1, 1)];
   
